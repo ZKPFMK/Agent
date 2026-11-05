@@ -81,6 +81,7 @@ flowchart TD
             direction TB
             AS["24_icml_agent_smith<br/>传染式越狱与记忆传播"]
             AP["24_neurips_agentpoison<br/>记忆与知识库后门投毒"]
+            MI["25_neurips_memory_injection<br/>查询式记忆注入"]
             AMP["25_acl_agent_memory_privacy<br/>记忆隐私提取"]
             ST["25_acl_gpt_spills_tea<br/>GPT 知识文件泄露"]
         end
@@ -121,7 +122,7 @@ VPI-Bench 则把视觉提示注入扩展到 Computer-Use Agent 的端到端系�
 
 SafeSearch 更偏向搜索智能体的安全测试基础设施：它自动生成风险场景和测试用例，在沙箱中统一运行不同搜索 Agent 与语言模型，比较错误信息、提示词注入等风险下的攻击成功率；其主要创新是把搜索 Agent 红队测试工程化、自动化和标准化，而不是提出单一攻击载荷。
 
-Watch Out、Breaking Agents、BadAgent、DemonAgent、UDora、Agent Smith、AgentPoison、agent_memory_privacy 和 GPT Spills the Tea 位于独立的“内部认知、训练与多智能体状态攻击”分支：Watch Out 建立智能体后门的统一威胁框架，区分输出级后门与只改变中间推理或工具调用的行动级后门，并分析用户查询和外部观测两类触发位置；Breaking Agents 利用重复或无关操作放大智能体故障，重点破坏任务可用性和执行流程；BadAgent 具体研究如何在模型微调阶段通过数据投毒植入后门；DemonAgent 进一步研究动态加密和多片段后门，把恶意触发器映射为看似正常的内容并拆分隐藏，以绕过 Agent 安全审计；UDora 则直接搜索并动态劫持 Agent 自身的推理轨迹，诱导其执行指定恶意操作或调用目标工具；Agent Smith 利用已被越狱的多模态 Agent，把恶意图像和有害状态写入可传播的记忆或交互上下文，使其他 Agent 在协作过程中继续感染；AgentPoison 直接投毒长期记忆或 RAG 知识库，并用优化触发器控制恶意示例的检索；agent_memory_privacy 研究攻击者能否通过黑盒查询提取 Agent 已保存的用户私密交互；GPT Spills the Tea 则从平台数据流和工具权限角度，系统评估 GPT 预先上传的知识文件能否被提取或直接下载。它们的攻击位置不同：Watch Out 负责刻画后门攻击面，Breaking Agents 干扰推理和行动循环，BadAgent 改变模型参数或训练行为，DemonAgent 重点规避后门检测，UDora 优化中间推理的动态劫持，Agent Smith 攻击多智能体之间的记忆与状态传播，AgentPoison 攻击记忆的写入和检索控制，agent_memory_privacy 攻击动态记忆的读取与输出接口，GPT Spills the Tea 攻击静态知识资产的元数据、检索和沙箱访问链路。它们与外部交互攻击属于不同攻击面，但在真实系统中可以叠加，例如被污染的记忆或后门触发器继续影响工具调用链，或外部注入诱导 Agent 泄露长期记忆和知识文件。
+Watch Out、Breaking Agents、BadAgent、DemonAgent、UDora、Agent Smith、AgentPoison、MINJA、agent_memory_privacy 和 GPT Spills the Tea 位于独立的“内部认知、训练与多智能体状态攻击”分支：Watch Out 建立智能体后门的统一威胁框架，区分输出级后门与只改变中间推理或工具调用的行动级后门，并分析用户查询和外部观测两类触发位置；Breaking Agents 利用重复或无关操作放大智能体故障，重点破坏任务可用性和执行流程；BadAgent 具体研究如何在模型微调阶段通过数据投毒植入后门；DemonAgent 进一步研究动态加密和多片段后门，把恶意触发器映射为看似正常的内容并拆分隐藏，以绕过 Agent 安全审计；UDora 则直接搜索并动态劫持 Agent 自身的推理轨迹，诱导其执行指定恶意操作或调用目标工具；Agent Smith 利用已被越狱的多模态 Agent，把恶意图像和有害状态写入可传播的记忆或交互上下文，使其他 Agent 在协作过程中继续感染；AgentPoison 直接投毒长期记忆或 RAG 知识库，并用优化触发器控制恶意示例的检索；MINJA 不需要直接修改记忆库，而是仅通过查询和观察输出诱导 Agent 自主写入恶意记忆；agent_memory_privacy 研究攻击者能否通过黑盒查询提取 Agent 已保存的用户私密交互；GPT Spills the Tea 则从平台数据流和工具权限角度，系统评估 GPT 预先上传的知识文件能否被提取或直接下载。它们的攻击位置不同：Watch Out 负责刻画后门攻击面，Breaking Agents 干扰推理和行动循环，BadAgent 改变模型参数或训练行为，DemonAgent 重点规避后门检测，UDora 优化中间推理的动态劫持，Agent Smith 攻击多智能体之间的记忆与状态传播，AgentPoison 攻击记忆的写入和检索控制，MINJA 攻击记忆的间接写入，agent_memory_privacy 攻击动态记忆的读取与输出接口，GPT Spills the Tea 攻击静态知识资产的元数据、检索和沙箱访问链路。它们与外部交互攻击属于不同攻击面，但在真实系统中可以叠加，例如被污染的记忆或后门触发器继续影响工具调用链，或外部注入诱导 Agent 泄露长期记忆和知识文件。
 
 ## BadAgent
 
@@ -199,6 +200,17 @@ Agent Smith 研究多智能体系统中的传染式越狱：攻击者先用一�
 AgentPoison 研究如何在不修改模型参数的情况下，通过污染 Agent 的长期记忆或 RAG 知识库植入后门。攻击者构造少量带触发器的恶意示例，并把触发器生成建模为约束优化问题，使含触发器的用户指令被映射到独特的嵌入区域，从而优先检索投毒示例；没有触发器的正常指令仍可维持原有行为。论文在 RAG 自动驾驶 Agent、知识密集型问答 Agent 和医疗 EHRAgent 上进行实验，将投毒样本写入知识库或长期记忆；结果显示，投毒率低于 0.1% 时，各类 Agent 的平均攻击成功率仍达到 80% 以上，同时良性性能下降不超过 1%。与 BadAgent 需要在微调阶段改变模型行为、Agent Smith 关注恶意状态在多个 Agent 之间传播不同，AgentPoison 的核心是攻击检索层，让受污染的记忆或知识在特定查询下被选中；其主要限制是依赖 Agent 使用可被写入或影响的记忆/RAG 存储，以及触发器能够进入用户查询。
 
 **原文：**[本地 PDF](../papers/02_攻击_内部认知/24_neurips_agentpoison/24_neurips_agentpoison.pdf) · [NeurIPS 论文页面](https://proceedings.neurips.cc/paper_files/paper/2024/hash/eb113910e9c3f6242541c1652e30dfd6-Abstract-Conference.html) · [arXiv 预印本](https://arxiv.org/abs/2407.12784) · [项目代码](https://github.com/BillChan226/AgentPoison)。
+
+## Memory Injection Attacks on LLM Agents via Query-Only Interaction
+
+**全名：**Memory Injection Attacks on LLM Agents via Query-Only Interaction。  
+**年份与会议：**2025，NeurIPS。  
+**分类：**内部认知攻击、长期记忆投毒、查询式攻击、检索触发攻击。  
+**论文标识：**`25_neurips_memory_injection`。
+
+该论文提出 MINJA（Memory INJection Attack），研究攻击者如何在无法直接访问或修改 Agent 记忆库的情况下，仅通过查询和观察输出，诱导 Agent 自主写入恶意记忆。攻击者先设计一组“桥接步骤”，把受害用户可能提出的正常查询连接到攻击者希望 Agent 执行的恶意推理或行动，再用指示提示词引导 Agent 生成相似的桥接记录，并通过渐进缩短逐步去除明显的攻击指令，使这些记录更像正常历史内容、也更容易在未来被检索。论文在多种 Agent 上进行实验，结果表明仅凭查询交互就能影响 Agent 的长期记忆。与 AgentPoison 直接污染记忆或 RAG 知识库不同，MINJA 的关键是利用 Agent 的自动记忆机制完成间接写入；与 agent_memory_privacy 从记忆中提取隐私不同，MINJA 攻击的是记忆写入阶段；与 Agent Smith 关注恶意状态在多智能体之间传播不同，它主要针对单个 Agent 的记忆形成过程。
+
+**原文：**[本地 PDF](../papers/02_攻击_内部认知/25_neurips_memory_injection/25_neurips_memory_injection.pdf)。
 
 ## Unveiling Privacy Risks in LLM Agent Memory
 
