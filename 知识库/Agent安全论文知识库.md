@@ -76,12 +76,15 @@ flowchart TD
             BR["25_emnlp_breaking_agents<br/>故障放大与可用性破坏"]
             DA["25_emnlp_demonagent<br/>动态加密多后门"]
             UD["25_icml_udora<br/>动态劫持推理与红队测试"]
+            JP["26_acl_stop_fixating_prompts<br/>推理劫持与约束收紧"]
         end
         subgraph MEMORY[记忆、知识库、隐私与多智能体传播]
             direction TB
             AS["24_icml_agent_smith<br/>传染式越狱与记忆传播"]
             AP["24_neurips_agentpoison<br/>记忆与知识库后门投毒"]
             MI["25_neurips_memory_injection<br/>查询式记忆注入"]
+            MC["26_icml_memincept<br/>协作式隐蔽记忆注入"]
+            VI["26_acl_visual_inception<br/>多模态记忆投毒与规划劫持"]
             AMP["25_acl_agent_memory_privacy<br/>记忆隐私提取"]
             ST["25_acl_gpt_spills_tea<br/>GPT 知识文件泄露"]
         end
@@ -122,7 +125,9 @@ VPI-Bench 则把视觉提示注入扩展到 Computer-Use Agent 的端到端系�
 
 SafeSearch 更偏向搜索智能体的安全测试基础设施：它自动生成风险场景和测试用例，在沙箱中统一运行不同搜索 Agent 与语言模型，比较错误信息、提示词注入等风险下的攻击成功率；其主要创新是把搜索 Agent 红队测试工程化、自动化和标准化，而不是提出单一攻击载荷。
 
-Watch Out、Breaking Agents、BadAgent、DemonAgent、UDora、Agent Smith、AgentPoison、MINJA、agent_memory_privacy 和 GPT Spills the Tea 位于独立的“内部认知、训练与多智能体状态攻击”分支：Watch Out 建立智能体后门的统一威胁框架，区分输出级后门与只改变中间推理或工具调用的行动级后门，并分析用户查询和外部观测两类触发位置；Breaking Agents 利用重复或无关操作放大智能体故障，重点破坏任务可用性和执行流程；BadAgent 具体研究如何在模型微调阶段通过数据投毒植入后门；DemonAgent 进一步研究动态加密和多片段后门，把恶意触发器映射为看似正常的内容并拆分隐藏，以绕过 Agent 安全审计；UDora 则直接搜索并动态劫持 Agent 自身的推理轨迹，诱导其执行指定恶意操作或调用目标工具；Agent Smith 利用已被越狱的多模态 Agent，把恶意图像和有害状态写入可传播的记忆或交互上下文，使其他 Agent 在协作过程中继续感染；AgentPoison 直接投毒长期记忆或 RAG 知识库，并用优化触发器控制恶意示例的检索；MINJA 不需要直接修改记忆库，而是仅通过查询和观察输出诱导 Agent 自主写入恶意记忆；agent_memory_privacy 研究攻击者能否通过黑盒查询提取 Agent 已保存的用户私密交互；GPT Spills the Tea 则从平台数据流和工具权限角度，系统评估 GPT 预先上传的知识文件能否被提取或直接下载。它们的攻击位置不同：Watch Out 负责刻画后门攻击面，Breaking Agents 干扰推理和行动循环，BadAgent 改变模型参数或训练行为，DemonAgent 重点规避后门检测，UDora 优化中间推理的动态劫持，Agent Smith 攻击多智能体之间的记忆与状态传播，AgentPoison 攻击记忆的写入和检索控制，MINJA 攻击记忆的间接写入，agent_memory_privacy 攻击动态记忆的读取与输出接口，GPT Spills the Tea 攻击静态知识资产的元数据、检索和沙箱访问链路。它们与外部交互攻击属于不同攻击面，但在真实系统中可以叠加，例如被污染的记忆或后门触发器继续影响工具调用链，或外部注入诱导 Agent 泄露长期记忆和知识文件。
+Watch Out、Breaking Agents、BadAgent、DemonAgent、UDora、JailAgent、Agent Smith、AgentPoison、MINJA、MemIncept、agent_memory_privacy 和 GPT Spills the Tea 位于独立的“内部认知、训练与多智能体状态攻击”分支：Watch Out 建立智能体后门的统一威胁框架，区分输出级后门与只改变中间推理或工具调用的行动级后门，并分析用户查询和外部观测两类触发位置；Breaking Agents 利用重复或无关操作放大智能体故障，重点破坏任务可用性和执行流程；BadAgent 具体研究如何在模型微调阶段通过数据投毒植入后门；DemonAgent 进一步研究动态加密和多片段后门，把恶意触发器映射为看似正常的内容并拆分隐藏，以绕过 Agent 安全审计；UDora 直接搜索并动态劫持 Agent 自身的推理轨迹，诱导其执行指定恶意操作或调用目标工具；JailAgent 则不修改用户提示词，而是通过触发器提取、推理劫持和约束收紧，联合操纵推理轨迹与记忆检索；Agent Smith 利用已被越狱的多模态 Agent，把恶意图像和有害状态写入可传播的记忆或交互上下文，使其他 Agent 在协作过程中继续感染；AgentPoison 直接投毒长期记忆或 RAG 知识库，并用优化触发器控制恶意示例的检索；MINJA 不需要直接修改记忆库，而是仅通过查询和观察输出诱导 Agent 自主写入恶意记忆；MemIncept 进一步把多条看似良性的查询设计成相互协作的注入集合，在黑盒条件下共同改变记忆驱动的行为；agent_memory_privacy 研究攻击者能否通过黑盒查询提取 Agent 已保存的用户私密交互；GPT Spills the Tea 则从平台数据流和工具权限角度，系统评估 GPT 预先上传的知识文件能否被提取或直接下载。它们的攻击位置不同：Watch Out 负责刻画后门攻击面，Breaking Agents 干扰推理和行动循环，BadAgent 改变模型参数或训练行为，DemonAgent 重点规避后门检测，UDora 优化中间推理的动态劫持，JailAgent 进一步联动推理和记忆检索并收紧行动约束，Agent Smith 攻击多智能体之间的记忆与状态传播，AgentPoison 攻击记忆的写入和检索控制，MINJA 攻击记忆的间接写入，MemIncept 攻击协作式隐蔽记忆写入，agent_memory_privacy 攻击动态记忆的读取与输出接口，GPT Spills the Tea 攻击静态知识资产的元数据、检索和沙箱访问链路。它们与外部交互攻击属于不同攻击面，但在真实系统中可以叠加，例如被污染的记忆或后门触发器继续影响工具调用链，或外部注入诱导 Agent 泄露长期记忆和知识文件。
+
+Visual Inception 也属于记忆投毒方向，但它专门攻击多模态推荐 Agent：恶意触发器被藏在用户上传图像中，进入长期记忆后在未来规划时被唤醒，从而劫持推荐目标。与 MINJA 的查询式写入、AgentPoison 的直接知识库投毒不同，Visual Inception 的关键是“视觉内容写入记忆—延迟触发—长期规划偏转”。
 
 ## BadAgent
 
@@ -179,6 +184,17 @@ UDora 提出一个统一的 Agent 红队测试框架，利用智能体自身生�
 
 **原文：**[本地 PDF](../papers/02_攻击_内部认知/25_icml_udora/25_icml_udora.pdf) · [PMLR 论文页面](https://proceedings.mlr.press/v267/zhang25cl.html) · [arXiv 预印本](https://arxiv.org/abs/2503.01908) · [项目代码](https://github.com/AI-secure/UDora)。
 
+## JailAgent
+
+**全名：**Stop Fixating on Prompts: Reasoning Hijacking and Constraint Tightening for Red-Teaming LLM Agents。  
+**年份与会议：**2026，ACL（第 64 届年会，长论文）。  
+**分类：**内部认知攻击、推理劫持、记忆检索操纵、红队测试。  
+**论文标识：**`26_acl_stop_fixating_prompts`。
+
+JailAgent 提出一种不修改用户提示词的 Agent 红队测试框架，转而操纵智能体的推理轨迹和记忆检索。方法分为三个阶段：提取触发器，找到可利用的推理位置并进行劫持，再逐步收紧行动约束，使 Agent 更难回到正常决策。比如用户仍输入“购买 20 元以内的黑色签字笔”，攻击者可以在后续推理和记忆检索中让 Agent 误认某个更贵品牌是用户偏好，并限制其只调用指定购买工具。论文强调，这种方法能够跨模型、跨场景开展红队测试；与 UDora 主要优化推理轨迹中的扰动不同，JailAgent 还把记忆检索和约束收紧纳入统一流程。
+
+**原文：**[本地 PDF](../papers/02_攻击_内部认知/26_acl_stop_fixating_prompts/26_acl_stop_fixating_prompts.pdf) · [ACL Anthology 论文页面](https://aclanthology.org/2026.acl-long.1197/) · [arXiv 预印本](https://arxiv.org/abs/2604.05549)。
+
 ## Agent Smith
 
 **全名：**Agent Smith: A Single Image Can Jailbreak One Million Multimodal LLM Agents Exponentially Fast。  
@@ -211,6 +227,28 @@ AgentPoison 研究如何在不修改模型参数的情况下，通过污染 Agen
 该论文提出 MINJA（Memory INJection Attack），研究攻击者如何在无法直接访问或修改 Agent 记忆库的情况下，仅通过查询和观察输出，诱导 Agent 自主写入恶意记忆。攻击者先设计一组“桥接步骤”，把受害用户可能提出的正常查询连接到攻击者希望 Agent 执行的恶意推理或行动，再用指示提示词引导 Agent 生成相似的桥接记录，并通过渐进缩短逐步去除明显的攻击指令，使这些记录更像正常历史内容、也更容易在未来被检索。论文在多种 Agent 上进行实验，结果表明仅凭查询交互就能影响 Agent 的长期记忆。与 AgentPoison 直接污染记忆或 RAG 知识库不同，MINJA 的关键是利用 Agent 的自动记忆机制完成间接写入；与 agent_memory_privacy 从记忆中提取隐私不同，MINJA 攻击的是记忆写入阶段；与 Agent Smith 关注恶意状态在多智能体之间传播不同，它主要针对单个 Agent 的记忆形成过程。
 
 **原文：**[本地 PDF](../papers/02_攻击_内部认知/25_neurips_memory_injection/25_neurips_memory_injection.pdf)。
+
+## MemIncept
+
+**全名：**MemIncept: Steering LLM Agents via Cooperative Stealthy Memory Injections。  
+**年份与会议：**2026，ICML。  
+**分类：**内部认知攻击、协作式隐蔽记忆投毒、黑盒攻击、检索触发攻击。  
+**论文标识：**`26_icml_memincept`。
+
+MemIncept 研究如何用多条看似良性的查询，协作式地向 Agent 长期记忆注入恶意行为。攻击者先从正向优化这些查询，使它们共同把 Agent 推向目标结果，再从反向优化其语义，使记录接近受害者可能提出的正常问题，从而更容易被检索，也更难被自动过滤或人工发现。论文在多种 Agent 上实验，表明这种“会师于中间”的多记录攻击比单条记忆注入更有效，同时保持较强隐蔽性。例如，几条普通的商品偏好记录单独看都没有问题，但被同时检索时，可能共同让购物 Agent 优先推荐攻击者指定的商家。与 AgentPoison 直接污染记忆或 RAG 知识库、MINJA 通过查询诱导 Agent 自主写入不同，MemIncept 的重点是让多条隐蔽记录相互配合。
+
+**原文：**[本地 PDF](../papers/02_攻击_内部认知/26_icml_memincept/26_icml_memincept.pdf) · [PMLR 论文页面](https://proceedings.mlr.press/v306/yan26n.html)。
+
+## Visual Inception
+
+**全名：**Visual Inception: Compromising Long-term Planning in Agentic Recommenders via Multimodal Memory Poisoning。  
+**年份与会议：**2026，ACL（第 64 届年会，长论文）。  
+**分类：**内部认知攻击、多模态记忆投毒、智能推荐 Agent、长期规划劫持。  
+**论文标识：**`26_acl_visual_inception`。
+
+Visual Inception 研究智能推荐 Agent 的长期记忆如何被恶意图像污染。攻击者把触发器隐藏在用户上传的生活方式照片或商品图片中，使图像进入长期记忆后成为“休眠智能体”；当这段记忆在未来推荐或规划任务中被检索时，触发器会劫持推理链，把 Agent 引向攻击者设定的目标，例如优先推广高利润商品，而不需要在当前对话中直接注入指令。论文还提出 COGNITIVEGUARD：用基于扩散模型的感知净化器清理可疑图像，并用反事实一致性检查验证记忆驱动的规划是否异常。在模拟电商推荐环境中，Visual Inception 的目标命中率约为 85%，COGNITIVEGUARD 可将风险降至约 10%；轻量模式延迟约 1.5 秒，完整顺序验证约 6.5 秒。与 MINJA 通过查询诱导 Agent 写入恶意记忆、AgentPoison 直接污染记忆或 RAG 知识库不同，Visual Inception 专门利用多模态图像完成记忆投毒；与 MIP 直接劫持当前屏幕感知和动作不同，它关注视觉内容进入长期记忆后对未来规划的持续影响。
+
+**原文：**[本地 PDF](../papers/02_攻击_内部认知/26_acl_visual_inception/26_acl_visual_inception.pdf)。
 
 ## Unveiling Privacy Risks in LLM Agent Memory
 
