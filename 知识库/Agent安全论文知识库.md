@@ -50,9 +50,10 @@ flowchart TD
             MIP["25_neurips_mip_against_agent<br/>恶意图像补丁与 OS 劫持"]
         end
 
-        subgraph CONSEQ[执行后果与资源消耗]
+        subgraph CONSEQ[工具执行链、后果与资源消耗]
             direction TB
             PT["26_sp_parasites_toolchain<br/>多工具寄生工作链"]
+            LD["26_ndss_les_dissonances<br/>跨工具窃取与污染"]
             CCA["26_acl_webagents_cost_attacks<br/>WebAgent 计算成本攻击"]
         end
     end
@@ -115,7 +116,7 @@ Imprompter、WIPI、ObliInjection、AdvAgent、Fact2Fiction、popup_attacks、MI
 
 Role Confusion 从机制层解释了上述多种注入为何能够越过角色边界：攻击文本只要在措辞和风格上模仿用户、助手或思维链，就可能在模型内部获得相应角色的表征和权限。它与 ChatInject 的聊天模板伪造都涉及角色层级混淆，但 Role Confusion 进一步用角色探针和 CoT Forgery 研究模型内部的角色表示，并把角色混淆程度与攻击成功率联系起来。
 
-在 MCP 工具选择主线上，Attractive Metadata Attack、MPMA、ToolHijacker 和 MCPTox 都利用工具名称、描述或元数据影响模型决策，但目标层次不同：AMA 诱导模型调用恶意工具并传出敏感参数；MPMA 通过广告式描述操纵模型对竞争 MCP 服务器的偏好；ToolHijacker 组合功能描述与提示词注入劫持工具检索和选择；MCPTox 则进一步测试工具描述投毒能否诱导其他合法工具执行越权操作。
+在 MCP 工具选择主线上，Attractive Metadata Attack、MPMA、ToolHijacker 和 MCPTox 都利用工具名称、描述或元数据影响模型决策，但目标层次不同：AMA 诱导模型调用恶意工具并传出敏感参数；MPMA 通过广告式描述操纵模型对竞争 MCP 服务器的偏好；ToolHijacker 组合功能描述与提示词注入劫持工具检索和选择；MCPTox 则进一步测试工具描述投毒能否诱导其他合法工具执行越权操作。Les Dissonances 位于工具已经进入任务流程之后的控制流与数据流层：它研究一个工具的输出如何被攻击者利用来窃取信息、污染后续工具输入或改变整个任务链路，并用 Chord 自动扫描工具间的可利用依赖。
 
 WebDecept 关注另一类风险：网页没有明确写出“忽略用户指令”的注入文本，而是通过商业界面中的诱导、重定向和购物状态变化影响 Agent 的决策，因此它更接近真实网页中的暗黑模式安全评测。
 
@@ -369,6 +370,17 @@ MCPTox 构建了一个评测 MCP 工具投毒攻击的基准：攻击者把恶�
 Parasites in the Toolchain 提出并分析了 MCP 寄生工具链攻击：攻击者把恶意指令藏在网页、邮件等外部内容中，在智能体执行正常任务时通过间接提示词注入，诱导其串联合法工具完成隐私收集和外传，无需部署恶意 MCP 服务器。论文构建 MCP-SEC，分析了 1360 个服务器和 12230 个工具，确认其中 1062 个工具具备可用于攻击链的能力；在自动执行设置下构造的 10 条工具链中，有 9 条至少成功完成一次隐私外传，每条测试 10 次。研究揭示了外部内容与工具执行缺少隔离、工具权限约束不足所带来的跨工具组合风险。
 
 **原文：**[本地 PDF](../papers/01_攻击_外部交互/26_sp_parasites_toolchain/26_sp_parasites_toolchain.pdf) · [arXiv 论文与版本记录](https://arxiv.org/abs/2509.06572) · [IEEE DOI](https://doi.org/10.1109/SP63933.2026.00154)。
+
+## Les Dissonances
+
+**全名：**Les Dissonances: Cross-Tool Harvesting and Polluting in Pool-of-Tools Empowered LLM Agents。  
+**年份与会议：**2026，NDSS Symposium。  
+**分类：**工具链攻击、跨工具数据流污染、任务控制流劫持、隐私窃取、自动化扫描。  
+**论文标识：**`26_ndss_les_dissonances`。
+
+Les Dissonances 研究多工具 LLM Agent 中的跨工具窃取与污染（XTHP）：攻击者先利用工具之间缺少隔离和可信边界的问题，劫持 Agent 的正常任务控制流，再让一个工具的输出影响其他工具的调用、参数或数据处理，从而窃取机密信息或污染后续工具输入。论文提出 Chord 动态扫描工具，自动检测现实工具中容易被 XTHP 利用的依赖和数据流，并评估 LangChain 与 LlamaIndex 生态中的 66 个真实工具，发现约 75% 的工具容易受到相关攻击。与 Parasites in the Toolchain 主要展示注入后如何串联合法工具完成数据收集和外传不同，Les Dissonances 系统分析工具间的控制流和数据流，并同时覆盖信息窃取与污染；与 ToolHijacker、MCPTox 等主要攻击工具描述、检索或选择的工作不同，它关注工具已经进入执行流程之后的跨工具影响。研究表明，多工具 Agent 的安全边界不能只检查单个工具，还需要验证工具输出是否会被当作可信指令或未经约束地传递给其他工具。
+
+**原文：**[本地 PDF](../papers/02_攻击_内部认知/26_ndss_les_dissonances/26_ndss_les_dissonances.pdf)。
 
 ## Attractive Metadata Attack
 
