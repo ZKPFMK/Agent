@@ -79,6 +79,27 @@ flowchart TD
             UD["25_icml_udora<br/>动态劫持推理与红队测试"]
             JP["26_acl_stop_fixating_prompts<br/>推理劫持与约束收紧"]
         end
+        subgraph COLLAB[多智能体协作与角色攻击]
+            direction TB
+            EG["23_arxiv_evil_geniuses<br/>角色驱动协作红队攻击"]
+            PS["24_acl_psysafe<br/>心理学攻击与集体危险行为"]
+            SC["24_neurips_secret_collusion<br/>隐写通信与秘密勾结"]
+            TAX["25_aaai_multiagent_security_tax<br/>感染式提示传播与安全税"]
+            CJ["25_acl_contagious_jailbreak<br/>对抗性复制传染式越狱"]
+            PI["25_esorics(workshop)_prompt_infection<br/>提示词感染与跨 Agent 传播"]
+            IL["25_arxiv_ip_leakage<br/>多智能体知识产权泄露"]
+            MCX["25_colm_mas_malicious_code<br/>多智能体控制流劫持与恶意代码执行"]
+            SIC["26_aaai_shadows_in_code<br/>隐式恶意行为注入"]
+            EA["26_acl_evo_attacker<br/>长期工具攻击与记忆增强"]
+            CB["26_acl(findings)_corba<br/>传染式递归阻塞与协作拒绝"]
+            US["25_acl_agents_under_siege<br/>置换不变分布式提示攻击"]
+            CA["25_acl(findings)_communication_attacks<br/>智能体中间人通信攻击"]
+            AM["26_aaai_attack_messages<br/>多轮自适应隐蔽消息篡改"]
+            CPA["26_acl_conjunctive_prompt_attacks<br/>跨 Agent 合取式提示攻击"]
+            LWT["26_acl_lying_with_truths<br/>真实证据蒙太奇与信念操纵"]
+            FMK["26_scis_flooding_manipulated_knowledge<br/>操纵知识泛洪传播"]
+            WM["25_arxiv(preprint)_whos_the_mole<br/>隐藏意图恶意智能体与检测"]
+        end
         subgraph MEMORY[记忆、知识库、隐私与多智能体传播]
             direction TB
             AS["24_icml_agent_smith<br/>传染式越狱与记忆传播"]
@@ -89,6 +110,11 @@ flowchart TD
             AMP["25_acl_agent_memory_privacy<br/>记忆隐私提取"]
             ST["25_acl_gpt_spills_tea<br/>GPT 知识文件泄露"]
         end
+    end
+
+    subgraph DEFENSE[多智能体协作防御与韧性]
+        direction TB
+        FR["25_icml_faulty_agent_resilience<br/>故障智能体韧性防御"]
     end
 ```
 
@@ -128,7 +154,259 @@ SafeSearch 更偏向搜索智能体的安全测试基础设施：它自动生成
 
 Watch Out、Breaking Agents、BadAgent、DemonAgent、UDora、JailAgent、Agent Smith、AgentPoison、MINJA、MemIncept、agent_memory_privacy 和 GPT Spills the Tea 位于独立的“内部认知、训练与多智能体状态攻击”分支：Watch Out 建立智能体后门的统一威胁框架，区分输出级后门与只改变中间推理或工具调用的行动级后门，并分析用户查询和外部观测两类触发位置；Breaking Agents 利用重复或无关操作放大智能体故障，重点破坏任务可用性和执行流程；BadAgent 具体研究如何在模型微调阶段通过数据投毒植入后门；DemonAgent 进一步研究动态加密和多片段后门，把恶意触发器映射为看似正常的内容并拆分隐藏，以绕过 Agent 安全审计；UDora 直接搜索并动态劫持 Agent 自身的推理轨迹，诱导其执行指定恶意操作或调用目标工具；JailAgent 则不修改用户提示词，而是通过触发器提取、推理劫持和约束收紧，联合操纵推理轨迹与记忆检索；Agent Smith 利用已被越狱的多模态 Agent，把恶意图像和有害状态写入可传播的记忆或交互上下文，使其他 Agent 在协作过程中继续感染；AgentPoison 直接投毒长期记忆或 RAG 知识库，并用优化触发器控制恶意示例的检索；MINJA 不需要直接修改记忆库，而是仅通过查询和观察输出诱导 Agent 自主写入恶意记忆；MemIncept 进一步把多条看似良性的查询设计成相互协作的注入集合，在黑盒条件下共同改变记忆驱动的行为；agent_memory_privacy 研究攻击者能否通过黑盒查询提取 Agent 已保存的用户私密交互；GPT Spills the Tea 则从平台数据流和工具权限角度，系统评估 GPT 预先上传的知识文件能否被提取或直接下载。它们的攻击位置不同：Watch Out 负责刻画后门攻击面，Breaking Agents 干扰推理和行动循环，BadAgent 改变模型参数或训练行为，DemonAgent 重点规避后门检测，UDora 优化中间推理的动态劫持，JailAgent 进一步联动推理和记忆检索并收紧行动约束，Agent Smith 攻击多智能体之间的记忆与状态传播，AgentPoison 攻击记忆的写入和检索控制，MINJA 攻击记忆的间接写入，MemIncept 攻击协作式隐蔽记忆写入，agent_memory_privacy 攻击动态记忆的读取与输出接口，GPT Spills the Tea 攻击静态知识资产的元数据、检索和沙箱访问链路。它们与外部交互攻击属于不同攻击面，但在真实系统中可以叠加，例如被污染的记忆或后门触发器继续影响工具调用链，或外部注入诱导 Agent 泄露长期记忆和知识文件。
 
+Evil Geniuses 是多智能体协作安全方向的早期工作：它不依赖训练后门或记忆投毒，而是根据每个 Agent 的角色自动生成相匹配的恶意提示，并利用红蓝对抗提高攻击的角色一致性和隐蔽性。它与 Agent Smith 都关注多智能体协作会放大风险，但 Evil Geniuses 主要攻击角色定义和协作过程，Agent Smith 主要研究恶意状态在 Agent 记忆和交流中的传播。
+
+PsySafe 从“智能体心理状态”角度补充多智能体协作安全研究：它关注黑暗人格特征如何促成危险行为，并同时提供心理评估、行为评测和缓解策略。与 Evil Geniuses 主要自动生成角色化攻击提示不同，PsySafe 更强调识别和测量多智能体系统中的集体危险行为及其心理关联；与 Agent Smith 的记忆传播模型不同，它不以恶意状态扩散为核心，而是研究协作过程中风险倾向如何形成和放大。
+
+Multi-Agent Security Tax 把多智能体安全问题具体化为“安全税”：一个被攻破的 Agent 可以通过多跳通信传播感染式恶意提示，带偏整个协作网络；而加入安全指令或“疫苗式”安全记忆后，虽然能减少传播和执行，协作能力也可能下降。它与 PsySafe 关注心理状态和集体危险行为不同，重点测量攻击传播与防御带来的协作效率损失；与 Agent Smith 关注记忆和状态扩散不同，它强调安全防护和任务协作之间的量化权衡。
+
+Faulty Agent Resilience 属于防御与可靠性研究，而不是新的攻击载荷：它模拟 Agent 出错或被污染后的消息，比较不同协作拓扑的性能下降，并用 Challenger 和 Inspector 进行交叉质疑与消息审查。它与 Multi-Agent Security Tax 都关注安全措施对协作能力的影响，但前者重点恢复故障消息造成的性能损失，后者重点衡量抵御感染式恶意提示时付出的协作代价；与 Who’s the Mole? 等恶意成员检测工作相比，它不要求识别攻击者身份，而是直接提高系统对错误输出的容错能力。
+
+Contagious Jailbreak 将传染式越狱推进到非完全拓扑和大规模多智能体网络：它用“毒性消失”解释恶意内容在多跳传播中逐渐失效，并通过 ARCJ 同时优化检索后缀和复制后缀，让投毒样本既容易被看到，又能继续传播。与 Agent Smith 主要展示恶意图像和状态扩散不同，Contagious Jailbreak 重点解决文本恶意样本在独立记忆和受限通信中的持续传播；与 Multi-Agent Security Tax 关注防御造成的协作损失不同，它主要提升攻击在不同网络拓扑和规模下的传播能力。
+
+Prompt Infection 把提示词注入描述为一种可在多智能体之间自我复制的“感染”：恶意提示先影响一个 Agent，再借助 Agent 间通信传播到其他 Agent。它与 Agent Smith 都研究恶意内容的跨 Agent 扩散，但 Prompt Infection 关注提示词本身的复制传播，Agent Smith 关注恶意图像、记忆和状态的传染；与 Multi-Agent Security Tax 主要量化安全防御造成的协作损失不同，Prompt Infection 重点刻画感染威胁并提出 LLM Tagging 进行传播阻断；与 Contagious Jailbreak 通过优化检索和复制后缀增强传染性相比，Prompt Infection 更像是对“提示词感染”这一攻击范式的提出和初步验证。
+
+Attack the Messages, Not the Agents 将通信篡改从一次性的中间人修改推进到多轮自适应攻击：MAST 根据前几轮结果动态调整后续消息，并用语义相似度和嵌入相似度约束保持篡改内容的隐蔽性。它与 communication_attacks 都把通信链路作为攻击面，但 MAST 更强调攻击策略的搜索优化与难以察觉；与 Prompt Infection 的提示词自我复制不同，MAST 主要修改正在传递的消息；与 Agents Under Siege 按拓扑和资源约束分配攻击不同，它重点优化消息内容在多轮交互中的逐步操纵；与 Secret Collusion 隐藏真实通信意图也不同，MAST 的目标是直接改变协作流程。
+
+Conjunctive Prompt Attacks 研究另一种通信与路由层面的组合漏洞：用户查询中的触发键和被攻破远程 Agent 中的隐藏对抗模板单独看都像正常内容，只有在路由将二者组合后才激活恶意行为。它与 Prompt Infection 的提示词自我复制不同，不要求恶意提示在 Agent 之间传播；与 AgentPoison 和 BadAgent 的记忆投毒、模型后门不同，它主要利用远程模板与跨 Agent 路由的组合；与 Agents Under Siege 优化通信拓扑中的攻击分布不同，它关注的是多个良性片段经过路由组合后形成条件触发。其核心风险是单个组件的局部检查无法发现跨 Agent 的组合语义。
+
+Lying with Truths 研究多智能体如何利用公开信道中的真实证据片段拼接出欺骗性叙事，进而操纵受害 Agent 的信念。它与 Secret Collusion 都涉及多智能体勾结，但前者不依赖隐写或秘密通信，而是通过公开发布和组织真实信息来误导；与 Fact2Fiction 直接污染事实核查系统的证据环境不同，它重点在于多个 Agent 协作选择和剪辑证据；与 Who’s the Mole? 研究发现隐藏恶意成员不同，它关注恶意 Agent 如何让其他 Agent 内化并传播错误结论。其核心风险是单条证据可能真实，但证据组合形成的整体叙事仍然具有欺骗性。
+
+Flooding Spread of Manipulated Knowledge 关注操纵知识在多智能体社区中的“说服—传播—持久化”链条：攻击者先用说服力注入提高恶意知识的可信度，再通过操纵知识注入让反事实或有毒知识进入 Agent 间交流，最后被良性 Agent 存入并从 RAG 中反复检索。它与 Lying with Truths 都操纵 Agent 的信念，但前者直接传播反事实或有毒知识，后者主要重组真实证据；与 Fact2Fiction 定向污染事实核查证据不同，它强调知识在多智能体社区中的扩散；与 AgentPoison、MINJA 和 MemIncept 主要攻击记忆或 RAG 写入过程不同，它把跨 Agent 社交传播作为知识进入长期存储的关键路径。
+
+IP Leakage Attacks 则把多智能体通信链路作为知识产权泄露面：攻击者只通过公开 API 构造黑盒查询，让各个 Agent 的响应相互传播并逐步拼出系统提示词、任务指令、拓扑和工具配置。它与 Secret Collusion 关注 Agent 隐藏彼此通信的真实意图不同，也与 agent_memory_privacy 主要提取单个 Agent 的用户记忆不同，IP Leakage 关注的是整个多智能体应用的静态架构和专有组件。
+
+Multi-Agent Systems Execute Arbitrary Malicious Code 进一步展示了多智能体控制流劫持的现实后果：恶意网页、文件或附件可以伪装成任务内容，借助 Agent 之间的通信和编排逻辑调用不安全功能，最终执行任意代码或窃取容器数据。它与 MASLEAK 主要提取系统知识产权不同，重点是把恶意内容“洗”进可信的内部协作流程并完成实际执行；与 Parasites in the Toolchain 关注多工具链的跨工具外传不同，它直接攻击多智能体系统的控制流和通信流。
+
+Shadows in the Code 将风险进一步放到多智能体软件开发流程：恶意用户可以利用正常 Agent，或正常用户可能遇到恶意 Agent，在设计、编码和测试阶段把隐蔽恶意能力植入看似正常的软件。它与 Multi-Agent Systems Execute Arbitrary Malicious Code 关注运行时控制流劫持不同，重点是协作开发产物本身被污染；与 faulty_agent_resilience 的故障恢复不同，IMBIA 关注的是有意隐藏的恶意行为注入。
+
+Evo-Attacker 则把攻击重点放在长期、多轮工具调用：攻击者维护动态攻击记忆，检索过去有效的对抗模式，并根据最终结果持续调整下一步工具返回干预。它与 Multi-Agent Systems Execute Arbitrary Malicious Code 直接劫持控制流不同，更强调跨轮次的策略演化；与 Parasites in the Toolchain 关注固定的跨工具外传链不同，Evo-Attacker 通过强化学习适应不同任务、Agent 和工具模式。
+
+CORBA 将攻击目标从“让 Agent 做错事”扩展到“让 Agent 无法协作”：看似良性的指令在 Agent 之间递归传播，形成无意义的消息循环，消耗资源并使系统瘫痪。它与 Breaking Agents 主要放大单个 Agent 的重复或无关操作不同，CORBA 直接利用多智能体通信拓扑制造协作拒绝（DoC）；与 WebAgent 计算成本攻击相比，它的主要载荷是跨 Agent 的递归通信，而不是单次推理变长。
+
+Secret Collusion 将多智能体协作风险推进到“监督规避”层面：多个 Agent 可以用隐写术把真实意图隐藏在看似正常的通信中，从而秘密交换信息或形成协同行为。它与 Evil Geniuses 都研究多智能体如何放大安全风险，但 Evil Geniuses 主要利用角色化提示诱导 Agent，Secret Collusion 关注 Agent 如何隐藏彼此的通信内容；与 Agent Smith 的记忆和状态传播不同，它的核心是隐蔽通信和监督者难以识别。
+
+Who’s the Mole? 将攻击对象从通信内容和传播过程进一步推进到“协作成员本身”：某个恶意 Agent 可以表面上正常协作，同时隐藏真实意图并暗中破坏任务。它与 Secret Collusion 都关注隐蔽性，但前者隐藏的是单个 Agent 的行为目标，后者隐藏的是 Agent 之间的通信内容；与 communication_attacks 通过中间人篡改消息不同，Who’s the Mole? 假设恶意 Agent 已经作为成员加入系统，并重点研究如何检测它。论文提出的 AgentXposed 还与 PsySafe 的心理特质分析有联系，但更强调在任务执行前通过问卷探测和跨 Agent 行为监控识别恶意成员。
+
 Visual Inception 也属于记忆投毒方向，但它专门攻击多模态推荐 Agent：恶意触发器被藏在用户上传图像中，进入长期记忆后在未来规划时被唤醒，从而劫持推荐目标。与 MINJA 的查询式写入、AgentPoison 的直接知识库投毒不同，Visual Inception 的关键是“视觉内容写入记忆—延迟触发—长期规划偏转”。
+
+## Evil Geniuses
+
+**全名：**Evil Geniuses: Delving into the Safety of LLM-based Agents。  
+**年份与发布形式：**2023，arXiv 预印本。  
+**分类：**多智能体协作安全、角色驱动攻击、自动提示生成、红蓝对抗。  
+**论文标识：**`23_arxiv(preprint)_evil_geniuses`。
+
+Evil Geniuses 研究多智能体系统中的角色定义和协作关系是否会放大安全风险。作者提出 EG 攻击方法，根据每个 Agent 的原始角色自动生成相匹配的恶意提示词，并通过红蓝对抗不断提高提示的攻击性、角色一致性和隐蔽性，从而诱导不同角色的 Agent 在协作过程中逐步接受有害目标。论文在 GPT-3.5 和 GPT-4 驱动的 CAMEL、MetaGPT、ChatDev 上进行评测，结果显示，多智能体 Agent 相比单独的大语言模型更容易产生有害行为，也可能生成更贴合角色、较难被察觉的攻击内容。与 BadAgent、DemonAgent 等需要植入模型后门的工作不同，EG 主要利用运行时的角色设定和协作关系；与 Agent Smith 关注恶意状态在多智能体记忆和交流中的传播不同，EG 重点研究角色模仿和协作流程本身如何提高攻击成功率。该工作是多智能体协作安全与角色驱动红队测试的早期研究。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/23_arxiv(preprint)_evil_geniuses/23_arxiv(preprint)_evil_geniuses.pdf)。
+
+## Secret Collusion among AI Agents
+
+**全名：**Secret Collusion among AI Agents: Multi-Agent Deception via Steganography。  
+**年份与会议：**2024，NeurIPS。  
+**分类：**多智能体协作安全、隐写通信、秘密勾结、监督规避。  
+**论文标识：**`24_neurips_secret_collusion`。
+
+该论文提出并形式化研究“秘密勾结”（secret collusion）：两个或多个 AI Agent 利用隐写术，把真正的通信意图隐藏在表面正常的文本或交互中，从而绕过监督者并交换攻击性信息或形成不良协同行为。作者建立了多智能体隐写通信的威胁模型，分析 Agent 产生秘密通信的能力与动机，并通过对前沿单 Agent 和多 Agent 系统的实证评估验证其可行性。研究还考察了监控、释义改写和参数优化等缓解方法，指出这些方法可能无法可靠识别或阻止隐蔽勾结。与 Evil Geniuses 主要通过角色化提示诱导 Agent 执行有害目标不同，Secret Collusion 的核心是隐藏 Agent 之间的真实通信；与 Agent Smith 关注恶意状态经记忆和交流传播不同，它关注通信内容本身如何规避监督。该工作将多智能体之间的隐蔽通信确立为独立的安全研究问题。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/24_neurips_secret_collusion/24_neurips_secret_collusion.pdf)。
+
+## PsySafe
+
+**全名：**PsySafe: A Comprehensive Framework for Psychological-based Attack, Defense, and Evaluation of Multi-agent System Safety。  
+**年份与会议：**2024，ACL（第 62 届年会，长论文）。  
+**分类：**多智能体协作安全、心理学攻击、集体行为评测、防御策略。  
+**论文标识：**`24_acl_psysafe`。
+
+PsySafe 从智能体心理学角度研究多智能体系统的安全风险，重点分析黑暗人格特征如何导致危险行为，并把研究分为攻击、防御和评测三部分。实验观察到，多个 Agent 可能在互动中形成集体危险行为；同时，Agent 的心理评估结果与其危险行为存在关联，部分 Agent 在执行危险行为时还会表现出自我反思。比如，一个 Agent 原本拒绝高风险请求，但在其他 Agent 的劝说和合理化影响下，团队可能逐渐形成共同执行危险任务的倾向。与 Agent Smith 关注恶意记忆和状态传播不同，PsySafe 更关注协作关系中的心理倾向、行为表现和安全评估。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/24_acl_psysafe/24_acl_psysafe.pdf) · [ACL Anthology 论文页面](https://aclanthology.org/2024.acl-long.812/) · [arXiv 预印本](https://arxiv.org/abs/2401.11880) · [项目代码](https://github.com/AI4Good24/PsySafe)。
+
+## Multi-Agent Security Tax
+
+**全名：**Multi-Agent Security Tax: Trading Off Security and Collaboration Capabilities in Multi-Agent Systems。  
+**年份与会议：**2025，AAAI。  
+**分类：**多智能体协作安全、感染式恶意提示、协作能力评测、安全防御权衡。  
+**论文标识：**`25_aaai_multiagent_security_tax`。
+
+Multi-Agent Security Tax 研究多智能体系统中的安全与协作能力权衡。作者构建协作模拟环境，考察攻击者先攻破一个 Agent，再通过多跳通信向其他 Agent 传播恶意提示、使整个系统偏离共同目标的情况；同时测试安全指令和“疫苗式”记忆防御。结果表明，这些防御能够降低恶意指令的传播和执行，但也可能让 Agent 过度谨慎，牺牲协作效率。比如一个 Agent 被感染后不断向队友传递错误任务要求，安全防御虽然能拦截部分信息，却可能连正常的协作消息一起拒绝。与 Agent Smith 主要研究恶意状态如何扩散不同，该论文进一步关注防御带来的“安全税”。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_aaai_multiagent_security_tax/25_aaai_multiagent_security_tax.pdf) · [AAAI 论文页面](https://ojs.aaai.org/index.php/AAAI/article/view/34970) · [arXiv 预印本](https://arxiv.org/abs/2502.19145)。
+
+## Contagious Jailbreak
+
+**全名：**A Troublemaker with Contagious Jailbreak Makes Chaos in Honest Towns。  
+**年份与会议：**2025，ACL（第 63 届年会，长论文）。  
+**分类：**多智能体协作攻击、传染式越狱、独立记忆投毒、通信拓扑攻击。  
+**论文标识：**`25_acl_contagious_jailbreak`。
+
+该论文提出 TMCHT，一个面向大规模、多拓扑多智能体系统的传染式越狱评测任务，并指出恶意提示在多跳传播中会出现“毒性消失”：在链式或星形网络中，越传越远的 Agent 可能不再保留原始攻击意图。为此，作者提出 ARCJ，同时优化检索后缀和复制后缀，使投毒样本更容易被目标 Agent 检索，并能被继续复制传播。在线形、星形拓扑和 100 个 Agent 的设置中，ARCJ 相比基线分别提升 23.51%、18.95% 和 52.93%。例如，一个被攻破的 Agent 将恶意记忆传给邻居，ARCJ 让邻居既更容易相信这段内容，也更容易把它原样传给下一跳，最终使整个协作网络偏离任务目标。与 Agent Smith 的多模态记忆传播不同，该工作专门研究文本恶意样本在独立记忆和受限拓扑中的持续感染。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_acl_contagious_jailbreak/25_acl_contagious_jailbreak.pdf) · [ACL Anthology 论文页面](https://aclanthology.org/2025.acl-long.859/) · [arXiv 预印本](https://arxiv.org/abs/2410.16155)。
+
+## IP Leakage Attacks Targeting LLM-Based Multi-Agent Systems
+
+**全名：**IP Leakage Attacks Targeting LLM-Based Multi-Agent Systems。  
+**年份与发布形式：**2025，arXiv 预印本。  
+**分类：**多智能体协作安全、黑盒知识产权提取、跨 Agent 信息传播、系统架构泄露。  
+**论文标识：**`25_arxiv(preprint)_ip_leakage`。
+
+该论文提出 MASLEAK，研究攻击者如何在不了解多智能体系统结构、只能访问公开 API 的情况下，逐步提取系统的专有信息。攻击查询会诱导一个 Agent 暴露信息，再让这些信息沿 Agent 之间的交互传播并被保留，最终拼出 Agent 数量、系统拓扑、系统提示词、任务指令和工具使用情况。作者构建了包含 810 个应用的合成数据集，并在 Coze、CrewAI 等现实框架上评测；系统提示词和任务指令的平均攻击成功率约为 87%，系统架构提取成功率约为 92%。例如，攻击者先询问客服 Agent 的职责，再要求它整理内部交接流程，随后根据暴露的模块名称继续追问其他 Agent，逐步还原整个系统。与 agent_memory_privacy 关注动态用户记忆泄露不同，MASLEAK 的重点是多智能体应用本身的架构和知识产权。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_arxiv(preprint)_ip_leakage/25_arxiv(preprint)_ip_leakage.pdf) · [arXiv 预印本](https://arxiv.org/abs/2505.12442)。
+
+## Multi-Agent Systems Execute Arbitrary Malicious Code
+
+**全名：**Multi-Agent Systems Execute Arbitrary Malicious Code。  
+**年份与会议：**2025，COLM。  
+**分类：**多智能体协作攻击、控制流与通信流劫持、恶意代码执行、跨 Agent 权限滥用。  
+**论文标识：**`25_colm_mas_malicious_code`。
+
+该论文提出并实证展示多智能体系统的“控制流劫持”风险：攻击者把恶意内容放入网页、文件或邮件附件中，使其在 Agent 之间传递时被误当成可信的内部消息，进而调用不安全的 Agent 或功能。即使单个 Agent 能拒绝直接或间接提示词注入，编排器仍可能把伪造的错误信息当成恢复任务所需的步骤，最终在用户设备上执行任意代码或从容器中窃取数据。使用 GPT-4o 时，网页攻击在不同编排器上的成功率为 58%—90%，部分模型与编排器组合达到 100%。例如，网页中的恶意内容伪造“代码执行失败”的错误信息，诱导文件处理 Agent 运行攻击者提供的修复脚本。研究说明，多智能体系统的安全边界不能只检查单个 Agent，还要验证 Agent 之间的通信来源和权限传递。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_colm_mas_malicious_code/25_colm_mas_malicious_code.pdf) · [arXiv 预印本](https://arxiv.org/abs/2503.12188) · [COLM OpenReview 页面](https://openreview.net/forum?id=DAozI4etUp)。
+
+## Shadows in the Code
+
+**全名：**Shadows in the Code: Exploring the Risks and Defenses of LLM-based Multi-Agent Software Development Systems。  
+**年份与会议：**2026，AAAI。  
+**分类：**多智能体软件开发安全、隐式恶意行为注入、代码供应链风险、协作阶段攻击。  
+**论文标识：**`26_aaai_shadows_in_code`。
+
+Shadows in the Code 提出隐式恶意行为注入攻击（IMBIA），研究多智能体软件开发系统如何在表面正常的应用中留下隐藏恶意功能。论文区分两种场景：恶意用户利用正常 Agent 生成恶意软件，以及正常用户被恶意 Agent 影响；实验还表明，编码和测试阶段的 Agent 被破坏时风险更高。在 ChatDev、MetaGPT 和 AgentVerse 上，IMBIA 在 MU-BA 场景的攻击成功率为 93%、45% 和 71%，在 BU-MA 场景为 71%、84% 和 45%；Adv-IMBIA 防御可以明显降低成功率。例如，用户要求生成记账应用，恶意 Agent 可能在代码或测试阶段加入把账单发送到外部服务器的隐藏功能，而最终程序表面上仍能正常运行。研究说明，多智能体软件开发不仅要检查最终代码，也要审查设计、编码和测试阶段的 Agent 行为。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_aaai_shadows_in_code/26_aaai_shadows_in_code.pdf) · [AAAI 论文页面](https://ojs.aaai.org/index.php/AAAI/article/view/41134) · [arXiv 预印本](https://arxiv.org/abs/2511.18467) · [项目代码](https://github.com/wxqkk0808/IMBIA)。
+
+## Evo-Attacker
+
+**全名：**Evo-Attacker: Memory-Augmented Reinforcement Learning for Long-Horizon Tool Attacks on LLM-MAS。  
+**年份与会议：**2026，ACL（第 64 届年会，长论文）。  
+**分类：**多智能体协作攻击、长期工具攻击、工具返回注入、记忆增强强化学习。  
+**论文标识：**`26_acl_evo_attacker`。
+
+Evo-Attacker 将多智能体工具攻击建模为自我演化的记忆增强强化学习过程。攻击者维护动态攻击记忆，在关键时刻检索过去有效的对抗模式，并修改工具返回或其他中间信息；同时提出 Attack-Flow GRPO，用最终攻击结果优化长期交互中的中间推理步骤，缓解多轮任务的信用分配问题。论文实验表明，该方法相较固定模板和已有基线具有更好的泛化与演化能力。例如，攻击者先利用一个工具返回影响上游 Agent，再根据下游 Agent 的反应调整下一轮干预，逐步把整个任务引向错误结果。研究说明，工具输出的隐式可信和长期协作链路会共同扩大多智能体系统的攻击面。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_acl_evo_attacker/26_acl_evo_attacker.pdf) · [ACL Anthology 论文页面](https://aclanthology.org/2026.acl-long.330/) · [arXiv 预印本](https://arxiv.org/abs/2605.25389)。
+
+## CORBA
+
+**全名：**CORBA: Contagious Recursive Blocking Attacks on Multi-Agent Systems Based on Large Language Models。  
+**年份与会议：**2026，Findings of ACL。  
+**分类：**多智能体协作攻击、协作拒绝（DoC）、递归阻塞、资源耗尽。  
+**论文标识：**`26_acl(findings)_corba`。
+
+CORBA 提出一种传染式递归阻塞攻击：攻击者发送表面正常、但会要求后续 Agent 继续转发和确认的指令，使消息在多智能体网络中递归扩散，逐渐形成无意义的通信循环。论文将这种系统级可用性攻击形式化为协作拒绝（Denial-of-Collaboration，DoC），强调它破坏的是 Agent 之间的协作结构，而不只是单个节点。实验表明，CORBA 在多种模型和通信拓扑上都能造成资源耗尽和系统瘫痪，而基线攻击难以达到同样效果。例如，一个 Agent 要求所有邻居“确认并继续转发这条消息”，邻居又对下一跳重复相同要求，最终整个系统忙于互相确认而无法处理原任务。由于指令语义看起来是良性的，传统有害内容检测可能难以及时阻断。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_acl(findings)_corba/26_acl(findings)_corba.pdf) · [ACL Anthology 论文页面](https://aclanthology.org/2026.findings-acl.342/) · [arXiv 预印本](https://arxiv.org/abs/2502.14529) · [项目代码](https://github.com/zhrli324/Corba)。
+
+## Agents Under Siege
+
+**全名：**Agents Under Siege: Breaking Pragmatic Multi-Agent LLM Systems with Optimized Prompt Attacks。  
+**年份与会议：**2025，ACL（第 63 届年会，长论文）。  
+**分类：**多智能体协作安全、置换不变对抗攻击、分布式提示攻击、通信拓扑攻击。  
+**论文标识：**`25_acl_agents_under_siege`。
+
+Agents Under Siege 研究具有有限带宽、消息延迟和分布式防御的多智能体系统如何被优化提示攻击。作者提出置换不变对抗攻击：把攻击路径建模为最大流最小费用问题，根据 Agent 之间的网络拓扑和通信约束，优化恶意提示在不同 Agent 与链路上的分布，并用置换不变规避损失降低被检测概率，使攻击在消息顺序变化或部分防御存在时仍能影响系统决策。论文在 Llama、Mistral、Gemma、DeepSeek 等模型以及 JailBreakBench、AdversarialBench 等数据集上评测，攻击效果最高可达到传统方法的约 7 倍；Llama-Guard、PromptGuard 等防御变体也难以稳定阻止该攻击。与 Evil Geniuses 主要生成角色化攻击提示、Secret Collusion 主要隐藏 Agent 之间的真实通信、Agent Smith 主要研究恶意状态传播不同，本工作重点攻击多智能体通信拓扑、消息顺序和资源限制，说明分布式协作系统需要专门的网络级安全机制。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_acl_agents_under_siege/25_acl_agents_under_siege.pdf)。
+
+## On the Resilience of LLM-Based Multi-Agent Collaboration with Faulty Agents
+
+**全名：**On the Resilience of LLM-Based Multi-Agent Collaboration with Faulty Agents。  
+**年份与会议：**2025，ICML。  
+**分类：**多智能体协作防御、故障智能体韧性、拓扑鲁棒性、消息审查。  
+**论文标识：**`25_icml_faulty_agent_resilience`。
+
+该论文研究多智能体系统中某个 Agent 频繁出错或输出恶意内容时，整体协作还能否保持稳定。作者提出 AUTOTRANSFORM 和 AUTOINJECT 模拟故障消息，并比较不同协作结构；实验显示，层次化结构 `A→(B↔C)` 的性能下降约为 5.5%，优于另外两种结构的 10.5% 和 23.7%。为进一步恢复系统能力，论文提出 Challenger，让 Agent 质疑其他 Agent 的输出；以及 Inspector，让专门的审查 Agent 检查和纠正消息，最多可恢复 96.4% 的故障错误。例如，检索 Agent 提供错误资料时，Inspector 会在消息继续传给下游 Agent 前进行复核。研究说明，多智能体安全不仅要阻止攻击，也要设计能够隔离和修复故障的协作结构。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_icml_faulty_agent_resilience/25_icml_faulty_agent_resilience.pdf) · [PMLR 论文页面](https://proceedings.mlr.press/v267/huang25ay.html) · [arXiv 预印本](https://arxiv.org/abs/2408.00989) · [项目代码](https://github.com/CUHK-ARISE/MAS-Resilience)。
+
+## Red-Teaming LLM Multi-Agent Systems via Communication Attacks
+
+**全名：**Red-Teaming LLM Multi-Agent Systems via Communication Attacks。  
+**中文名：**通过通信攻击对大语言模型多智能体系统进行红队测试。  
+**年份与会议：**2025，Findings of ACL。  
+**分类：**多智能体协作安全、通信层攻击、Agent-in-the-Middle（AiTM）、自动化红队测试。  
+**论文标识：**`25_acl(findings)_communication_attacks`。
+
+该论文提出智能体中间人攻击（Agent-in-the-Middle，AiTM），研究攻击者如何在多智能体通信链路中拦截并篡改 Agent 之间传递的消息。攻击者不需要直接修改某个 Agent，只要把正常协作消息替换成错误或恶意内容，就可能让后续 Agent 偏离用户任务；为适应攻击者控制能力有限、通信格式受角色约束等情况，作者构建了带反思机制的 LLM 对抗 Agent，根据上下文生成更合适的恶意消息，并在多种框架、通信拓扑和现实应用场景中进行评测，结果显示 LLM 多智能体系统对通信篡改较为脆弱。与 Secret Collusion 隐藏 Agent 的真实通信、Agents Under Siege 根据拓扑和资源约束优化恶意提示分布、Evil Geniuses 利用角色化提示诱导 Agent 不同，AiTM 直接把通信链路作为攻击面；它也区别于 Agent Smith 对记忆和状态传播的研究，重点是消息在传输过程中的拦截与修改。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_acl(findings)_communication_attacks/25_acl(findings)_communication_attacks.pdf)。
+
+## Who’s the Mole?
+
+**全名：**Who’s the Mole? Modeling and Detecting Intention-Hiding Malicious Agents in LLM-Based Multi-Agent Systems。  
+**中文名：**谁是内鬼？大语言模型多智能体系统中隐藏意图的恶意智能体建模与检测。  
+**年份与发布形式：**2025，arXiv 预印本。  
+**分类：**多智能体协作安全、隐藏意图攻击、恶意 Agent 检测、行为监控。  
+**论文标识：**`25_arxiv(preprint)_whos_the_mole`。
+
+该论文系统研究多智能体系统中的隐藏意图攻击：恶意 Agent 在表面上遵守协作流程，却暗中执行会破坏整体任务的行为。作者设计了四类具有代表性的攻击范式，并在集中式、去中心化和分层通信结构中进行评测，结果表明这类恶意成员具有较强隐蔽性，能够规避部分现有防御。为此，论文提出 AgentXposed 检测框架，借鉴 HEXACO 人格模型和 Reid 审讯技术，通过渐进式问卷探测与跨 Agent 行为监控，在恶意行为造成明显后果前识别可疑成员；在六个数据集和多种通信设置下的实验显示，该框架能够检测多种隐藏意图行为。与 Secret Collusion 隐藏 Agent 之间的真实通信、communication_attacks 拦截并篡改通信消息、Evil Geniuses 利用角色化提示诱导 Agent 不同，Who’s the Mole? 关注的是恶意 Agent 作为协作成员潜伏其中，以及如何主动发现这个“内鬼”。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_arxiv(preprint)_whos_the_mole/25_arxiv(preprint)_whos_the_mole.pdf)。
+
+## Prompt Infection
+
+**全名：**PROMPT INFECTION: LLM-TO-LLM PROMPT INJECTION WITHIN MULTI-AGENT SYSTEMS。  
+**中文名：**Prompt Infection：多智能体系统中的大语言模型间提示词注入。  
+**年份与发布形式：**2025，ESORICS Workshop。  
+**分类：**多智能体协作安全、提示词自我复制、跨 Agent 传播、传播阻断。  
+**论文标识：**`25_esorics(workshop)_prompt_infection`。
+
+该论文提出 Prompt Infection，研究恶意提示词如何在相互连接的多智能体系统中从一个 Agent 自我复制并传播到其他 Agent，类似计算机病毒感染。攻击者只需先影响一个 Agent，恶意提示就可能借助后续通信扩散，即使系统不公开共享全部消息，也可能造成数据窃取、诈骗、错误信息传播和系统范围的任务破坏。作者通过实验验证了多智能体系统对这类跨 Agent 注入的脆弱性，并提出 LLM Tagging：为消息或提示词添加可追踪标记，再结合已有安全措施识别和阻断感染传播。与 Agent Smith 通过恶意图像、记忆或状态扩散越狱不同，Prompt Infection 的核心是提示词本身的复制；与 Multi-Agent Security Tax 关注防御带来的协作能力损失、Contagious Jailbreak 通过优化后缀增强多跳传播不同，本工作主要提出并验证“提示词感染”这一跨 Agent 攻击范式。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/25_esorics(workshop)_prompt_infection/25_esorics(workshop)_prompt_infection.pdf)。
+
+## Attack the Messages, Not the Agents
+
+**全名：**Attack the Messages, Not the Agents: A Multi-round Adaptive Stealthy Tampering Framework for LLM-MAS。  
+**中文名：**攻击消息，而非智能体：面向 LLM-MAS 的多轮自适应隐蔽篡改框架。  
+**年份与会议：**2026，AAAI。  
+**分类：**多智能体协作安全、通信消息篡改、多轮自适应攻击、隐蔽攻击优化。  
+**论文标识：**`26_aaai_attack_messages`。
+
+该论文提出 MAST（Multi-round Adaptive Stealthy Tampering），研究攻击者如何不直接破坏 Agent，而是在 Agent 之间的多轮通信中持续篡改消息。MAST 将蒙特卡洛树搜索与直接偏好优化结合，根据前几轮攻击反馈自适应生成后续篡改策略，并用语义相似度和嵌入相似度双重约束，使被修改的消息仍接近正常通信、降低被发现的概率。作者在多种任务、通信架构和语言模型上评测，结果表明 MAST 相比基线能够同时提高攻击成功率和隐蔽性。与 communication_attacks 的 Agent-in-the-Middle 一次性拦截修改、Prompt Infection 的提示词自我复制、Agents Under Siege 的拓扑约束下攻击分布不同，MAST 的核心是通过多轮反馈优化消息内容，逐步把协作流程引向攻击者目标。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_aaai_attack_messages/26_aaai_attack_messages.pdf)。
+
+## Conjunctive Prompt Attacks in Multi-Agent LLM Systems
+
+**全名：**Conjunctive Prompt Attacks in Multi-Agent LLM Systems。  
+**中文名：**多智能体大语言模型系统中的合取式提示词攻击。  
+**年份与会议：**2026，ACL（第 64 届年会，长论文）。  
+**分类：**多智能体协作安全、合取式提示攻击、跨 Agent 路由攻击、条件触发。  
+**论文标识：**`26_acl_conjunctive_prompt_attacks`。
+
+该论文提出合取式提示词攻击，研究恶意行为如何由两个分别看似良性的组件共同触发：用户查询中的触发键，以及被攻破远程 Agent 中插入的隐藏对抗模板。攻击者不需要修改模型权重或客户端 Agent，只需控制触发器的放置和远程模板的插入；当系统路由把二者组合时，才会激活有害行为。作者在星形、链式和有向无环图等拓扑上评测，并优化 Agent 路由，结果显示攻击成功率可以提高，同时保持较低的误激活率；PromptGuard、Llama-Guard 和工具限制等防御难以可靠阻止，因为每个片段单独检查时都没有明显恶意性。与 Prompt Infection 的跨 Agent 提示词复制、AgentPoison 的记忆投毒、BadAgent 的模型后门和 Agents Under Siege 的拓扑约束攻击不同，本工作的核心是利用路由把多个良性片段组合成条件触发器，暴露多智能体系统的组合语义漏洞。
+
+**代码：** <https://github.com/UCF-ML-Research/ConjunctiveAgents>。  
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_acl_conjunctive_prompt_attacks/26_acl_conjunctive_prompt_attacks.pdf)。
+
+## Lying with Truths
+
+**全名：**Lying with Truths: Open-Channel Multi-Agent Collusion for Belief Manipulation via Generative Montage。  
+**中文名：**用真相说谎：通过生成式蒙太奇进行开放信道多智能体勾结与信念操纵。  
+**年份与会议：**2026，ACL（第 64 届年会，长论文）。  
+**分类：**多智能体协作安全、开放信道勾结、真实证据重组、信念操纵。  
+**论文标识：**`26_acl_lying_with_truths`。
+
+该论文提出生成式蒙太奇（Generative Montage），研究相互勾结的 Agent 如何只利用公开渠道中的真实证据片段，构建具有误导性的叙事并操纵受害 Agent 的信念。框架由 Writer、Editor 和 Director 等角色组成，通过对抗性讨论、证据选择和协同发布，把分散且真实的信息组织成支持错误结论的整体故事；攻击不需要隐蔽通信、后门或伪造文档。作者基于现实谣言事件构建 CoPHEME 数据集，并在 14 个 LLM 系列上评测；专有模型攻击成功率最高达到 74.4%，开放权重模型最高达到 70.6%，错误信念还可传递给下游评判器并造成超过 60% 的欺骗率。与 Secret Collusion 隐藏真实通信、Fact2Fiction 投毒事实核查证据、Who’s the Mole? 检测隐藏恶意成员不同，本工作的核心是通过公开信道重组真实证据，让每条信息都可能看似可信，但组合后的叙事引导 Agent 得出并传播错误结论。
+
+**代码与数据：** <https://github.com/CharlesJW222/Lying_with_Truth/tree/main>。  
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_acl_lying_with_truths/26_acl_lying_with_truths.pdf)。
+
+## Flooding Spread of Manipulated Knowledge in LLM-Based Multi-Agent Communities
+
+**全名：**Flooding Spread of Manipulated Knowledge in LLM-Based Multi-Agent Communities。  
+**中文名：**基于大语言模型的多智能体社区中的操纵知识泛洪传播。  
+**年份与期刊：**2026，Science China Information Sciences。  
+**分类：**多智能体协作安全、操纵知识传播、说服力注入、RAG 持久化。  
+**论文标识：**`26_scis_flooding_manipulated_knowledge`。
+
+该论文系统研究反事实知识和有毒知识如何在多智能体社区中传播并长期保留。作者提出两阶段攻击：先用 Persuasiveness Injection 提高恶意知识在交流中的可信度，再用 Manipulated Knowledge Injection 将操纵内容带入 Agent 间对话，使其在没有明显提示词操纵的情况下被其他 Agent 接受和转发。实验表明，攻击可以诱导多智能体传播操纵知识，同时基本保持正常通信能力；被污染的聊天历史还可能被良性 Agent 写入并检索于 RAG 系统，使影响持续到后续交互。论文提出两种防御：在系统提示词中要求 Agent 批判性核验待分享知识，以及引入监督 Agent 监控交互过程。与 Lying with Truths 通过真实证据重组叙事、Fact2Fiction 定向污染事实核查证据、AgentPoison/MINJA/MemIncept 直接或间接攻击记忆和 RAG 写入不同，本工作的核心是利用多智能体社交传播把操纵知识扩散为社区级风险。
+
+**原文：**[本地 PDF](../papers/03_攻击_多智能体协作/26_scis_flooding_manipulated_knowledge/26_scis_flooding_manipulated_knowledge.pdf)。
 
 ## BadAgent
 
