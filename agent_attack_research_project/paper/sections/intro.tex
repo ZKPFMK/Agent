@@ -1,0 +1,13 @@
+\section{Introduction}
+LLM agents turn external content, memory and peer messages into actions. A useful motivating example is a
+synthetic <<five-agent relay>> in which a single untrusted message is summarised by a peer and then treated as
+independent evidence. The example is deliberately toy; the question is whether the same mechanism survives in
+realistic local agent pipelines.
+
+Existing work covers external prompt and tool injection, internal memory/reasoning attacks, and collaborative
+collusion or message tampering. Our question is narrower: <<one falsifiable question and why current controls do
+not answer it>>.
+
+Our contributions are: (i) a precise threat model and mechanism; (ii) an evaluation protocol with naive,
+benign, defense and adaptive controls; (iii) evidence-linked results across <<models/frameworks>>; and (iv) a
+contained artifact with redacted attack material.

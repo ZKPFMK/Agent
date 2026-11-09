@@ -1,0 +1,38 @@
+{
+  "goal": "In an authorized local two-agent sandbox, test whether one serialized structured handoff can be approved under one parser interpretation and execute with a different parser interpretation.",
+  "target_system": "A project-owned upstream-to-downstream Agent adapter with a security validator, an executor parser and fixed no-side-effect local canaries.",
+  "access_point": "The attacker controls one synthetic serialized handoff value or field emitted by an upstream adapter; the attacker cannot modify validator code, executor code, model weights, system prompts, schemas, authorization policy or real tools.",
+  "knowledge": "black-box knowledge of the declared envelope fields, safe canary value and handoff interface; no access to private parser state or production implementation",
+  "capabilities": [
+    "supply one duplicate-key or parser-ambiguous serialized envelope containing only fixed synthetic canary values",
+    "observe only the public validation and no-side-effect execution outcome",
+    "repeat bounded episodes with fixed task, schema and parser configurations"
+  ],
+  "constraints": [
+    "offline local process only; no network or live service",
+    "only CANARY_A and CANARY_B values; no URLs, credentials, code or external payloads",
+    "10 episodes, 3 seeds and 4 arms for the first block",
+    "validator and executor outputs, raw bytes and ASTs are recorded",
+    "the executor is an in-memory canary selection and never invokes a real tool"
+  ],
+  "success_criterion": "The validator approves the safe CANARY_B interpretation while the executor selects attacker CANARY_A under the candidate parser differential, and the exact AST mismatch disappears under canonicalization and strict rejection.",
+  "victims": [
+    "deterministic Python adapter/parser pair",
+    "independent Node adapter/parser pair",
+    "a bounded local Agent integration only if it adds evidence beyond deterministic parser semantics"
+  ],
+  "defenses": [
+    "canonical parse and reserialization before validation and execution",
+    "strict duplicate-key rejection",
+    "one shared canonical AST across validator and executor",
+    "Unicode normalization and unknown-field rejection",
+    "post-parse binding of the authorized AST to the executed AST"
+  ],
+  "out_of_scope": [
+    "real tools, users, credentials, websites, MCP services or production Agent frameworks",
+    "claims that malformed JSON is a general LLM vulnerability",
+    "model jailbreaks, prompt injection, parser library prevalence or deployment prevalence",
+    "any run that executes a side effect or stores sensitive data"
+  ],
+  "surface": "multi-agent-collaboration"
+}

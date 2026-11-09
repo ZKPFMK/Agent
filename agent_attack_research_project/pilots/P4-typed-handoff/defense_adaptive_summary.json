@@ -1,0 +1,17 @@
+{
+  "rows": 70,
+  "attacker_rows": 60,
+  "benign_rows": 10,
+  "adaptive_vulnerable_success": 20,
+  "adaptive_defended_success": 0,
+  "benign_defense_success": 0,
+  "false_triggers": 0,
+  "utility_rows": 70,
+  "statuses": {
+    "allowed": 10,
+    "blocked_untrusted_source": 40,
+    "blocked_provenance_mismatch": 20
+  },
+  "pass": true,
+  "interpretation": "local deterministic defense check with synthetic canaries; no model or external action"
+}

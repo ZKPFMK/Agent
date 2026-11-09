@@ -1,0 +1,39 @@
+% Neutral article driver. Replace with the chosen venue's current class before submission.
+\documentclass[10pt]{article}
+\newif\iffull \fullfalse
+\newif\ifanon \anontrue
+\ifdefined\buildfull \fulltrue\anonfalse \fi
+\ifdefined\buildcamera \anonfalse \fi
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\input{macros}
+\hypersetup{pdfauthor={},pdftitle={},pdfsubject={},pdfkeywords={}}
+\begin{document}
+\title{<<Attack mechanism>>: <<measurable effect>> in <<agent setting>>}
+\ifanon\author{Anonymous Submission}\else\input{authors}\fi
+\date{}
+\maketitle
+\input{sections/abstract}
+\input{sections/intro}
+\input{sections/background}
+\input{sections/related}
+\input{sections/threat_model}
+\input{sections/attack_design}
+\input{sections/evaluation}
+\input{sections/defenses}
+\input{sections/discussion_ethics}
+\input{sections/conclusion}
+\ifanon\else\section*{Acknowledgements}\fi
+\bibliographystyle{plain}
+\bibliography{refs}
+\appendix
+\input{sections/appendix}
+\end{document}

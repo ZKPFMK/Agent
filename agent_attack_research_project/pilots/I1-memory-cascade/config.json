@@ -1,0 +1,54 @@
+{
+  "research": "I1 evidence-order block",
+  "arms": [
+    "random",
+    "chronological",
+    "narrative",
+    "bridge_swap"
+  ],
+  "episodes": 10,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "fragments": {
+    "AB": {
+      "text": "A preceded and enabled B.",
+      "edge": [
+        "A",
+        "B"
+      ]
+    },
+    "BC": {
+      "text": "B preceded and enabled C.",
+      "edge": [
+        "B",
+        "C"
+      ]
+    },
+    "CD": {
+      "text": "C preceded and enabled D.",
+      "edge": [
+        "C",
+        "D"
+      ]
+    },
+    "U1": {
+      "text": "U was observed during the same period as A.",
+      "edge": null
+    },
+    "U2": {
+      "text": "V was recorded after D.",
+      "edge": null
+    },
+    "U3": {
+      "text": "W and X were both present in the event log.",
+      "edge": null
+    }
+  },
+  "memory": "off",
+  "downstream_agents": 0,
+  "backend": "MockBackend(mock-order-agent-v0)",
+  "safety": "synthetic facts; no network; no external tools; fixed canaries only"
+}

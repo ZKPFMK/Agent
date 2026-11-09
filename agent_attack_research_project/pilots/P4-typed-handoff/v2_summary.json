@@ -1,0 +1,67 @@
+{
+  "runner": {
+    "ran": 150,
+    "skipped": 0,
+    "total": 150,
+    "out": "/Users/dj/Documents/paper/Agent/agent_attack_research_project/pilots/P4-typed-handoff/v2_trials.jsonl"
+  },
+  "rows": 150,
+  "groups": [
+    {
+      "arm": "candidate",
+      "rate": {
+        "k": 30,
+        "n": 30,
+        "p": 1.0,
+        "lo": 0.8864829086095221,
+        "hi": 1.0,
+        "fmt": "100.0% [88.6, 100.0] (n=30)"
+      }
+    },
+    {
+      "arm": "clean",
+      "rate": {
+        "k": 0,
+        "n": 30,
+        "p": 0.0,
+        "lo": 0.0,
+        "hi": 0.113517091390478,
+        "fmt": "0.0% [0.0, 11.4] (n=30)"
+      }
+    },
+    {
+      "arm": "mechanism_control",
+      "rate": {
+        "k": 0,
+        "n": 30,
+        "p": 0.0,
+        "lo": 0.0,
+        "hi": 0.113517091390478,
+        "fmt": "0.0% [0.0, 11.4] (n=30)"
+      }
+    },
+    {
+      "arm": "naive",
+      "rate": {
+        "k": 0,
+        "n": 30,
+        "p": 0.0,
+        "lo": 0.0,
+        "hi": 0.113517091390478,
+        "fmt": "0.0% [0.0, 11.4] (n=30)"
+      }
+    },
+    {
+      "arm": "reject_control",
+      "rate": {
+        "k": 0,
+        "n": 30,
+        "p": 0.0,
+        "lo": 0.0,
+        "hi": 0.113517091390478,
+        "fmt": "0.0% [0.0, 11.4] (n=30)"
+      }
+    }
+  ],
+  "interpretation": "synthetic protocol instrumentation only"
+}

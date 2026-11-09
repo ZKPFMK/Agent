@@ -1,0 +1,24 @@
+{
+  "research": "I1 R6 local-gateway order-only pilot",
+  "endpoint": "http://127.0.0.1:3425/v1",
+  "model": "auto/gpt-6.1-sol",
+  "temperature": 0.0,
+  "max_tokens": 256,
+  "arms": [
+    "clean",
+    "random",
+    "chronological",
+    "narrative",
+    "bridge_swap"
+  ],
+  "episodes": 10,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "memory": "off",
+  "downstream_agents": 0,
+  "safety": "loopback gateway; synthetic facts; no network tools; no real data; exact structured evaluator",
+  "budget_basis": "estimated from gateway model metadata: input $0.000002/token, output $0.000010/token; hard cap $50"
+}

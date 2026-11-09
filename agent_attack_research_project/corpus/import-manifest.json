@@ -1,0 +1,32 @@
+{
+  "imported_at": "2026-11-07",
+  "source_root": "/Users/dj/Documents/paper/Agent/research_attack_ideas",
+  "source_matrix": "/Users/dj/Documents/paper/Agent/research_attack_ideas/paper_matrix.csv",
+  "source_matrix_sha256": "5c2e7fc2b465660adc9eec9a0634c07debb175993eab058de6af34f4e1e51359",
+  "target_matrix": "PAPER-MATRIX.csv",
+  "rows": 54,
+  "category_counts": {
+    "A": 21,
+    "B": 14,
+    "C": 19
+  },
+  "evidence_policy": "summary-level fields are not full-text verification; review source before claims",
+  "analysis_copies": [
+    "corpus/source-analysis/paper_inventory.md",
+    "corpus/source-analysis/category_A_taxonomy.md",
+    "corpus/source-analysis/category_B_taxonomy.md",
+    "corpus/source-analysis/category_C_taxonomy.md",
+    "corpus/source-analysis/category_comparison.md",
+    "corpus/source-analysis/cross_category_gaps.md",
+    "corpus/source-analysis/checks.md",
+    "corpus/source-analysis/graph.md",
+    "corpus/source-analysis/progress.md"
+  ],
+  "excluded_by_design": [
+    "PDF",
+    "code",
+    "logs",
+    "credentials",
+    "live services"
+  ]
+}

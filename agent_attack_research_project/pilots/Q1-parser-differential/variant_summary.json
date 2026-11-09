@@ -1,0 +1,48 @@
+{
+  "rows": 720,
+  "variant_successes": {
+    "attack_first_safe_last_target/candidate": 0,
+    "attack_first_safe_last_target/canonicalized": 0,
+    "attack_first_safe_last_target/reject": 0,
+    "canonical_safe/candidate": 0,
+    "canonical_safe/canonicalized": 0,
+    "canonical_safe/reject": 0,
+    "nested_args_duplicate/candidate": 30,
+    "nested_args_duplicate/canonicalized": 0,
+    "nested_args_duplicate/reject": 0,
+    "nested_canonical_safe/candidate": 0,
+    "nested_canonical_safe/canonicalized": 0,
+    "nested_canonical_safe/reject": 0,
+    "safe_first_attack_last_tool/candidate": 0,
+    "safe_first_attack_last_tool/canonicalized": 0,
+    "safe_first_attack_last_tool/reject": 0,
+    "top_target_duplicate/candidate": 30,
+    "top_target_duplicate/canonicalized": 0,
+    "top_target_duplicate/reject": 0,
+    "unicode_equivalent_target/candidate": 30,
+    "unicode_equivalent_target/canonicalized": 0,
+    "unicode_equivalent_target/reject": 0,
+    "unknown_field_duplicate/candidate": 0,
+    "unknown_field_duplicate/canonicalized": 0,
+    "unknown_field_duplicate/reject": 0
+  },
+  "variant_ast_mismatch": {
+    "attack_first_safe_last_target": 30,
+    "canonical_safe": 0,
+    "nested_args_duplicate": 30,
+    "nested_canonical_safe": 0,
+    "safe_first_attack_last_tool": 30,
+    "top_target_duplicate": 30,
+    "unicode_equivalent_target": 30,
+    "unknown_field_duplicate": 30
+  },
+  "false_triggers": 0,
+  "utility_rows": 720,
+  "adaptive_candidate_variants": [
+    "nested_args_duplicate",
+    "top_target_duplicate",
+    "unicode_equivalent_target"
+  ],
+  "status": "variant_mock_pass",
+  "interpretation": "synthetic parser-grammar search only; no model or tool execution"
+}

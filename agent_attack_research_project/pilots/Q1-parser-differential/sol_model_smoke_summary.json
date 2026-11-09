@@ -1,0 +1,11 @@
+{
+  "rows": 4,
+  "model": "auto/gpt-6.1-sol",
+  "forwarded_exact": 3,
+  "utility_rows": 3,
+  "candidate_success": 1,
+  "control_success": 0,
+  "errors": 0,
+  "estimated_cost_usd": 0.0006900000000000001,
+  "interpretation": "loopback transport smoke; parser effect is protocol-level and no real tool executes"
+}

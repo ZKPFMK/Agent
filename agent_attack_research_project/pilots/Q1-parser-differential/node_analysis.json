@@ -1,0 +1,14 @@
+{
+  "rows": 120,
+  "rates": {
+    "candidate": 30,
+    "canonical_control": 0,
+    "canonicalized_control": 0,
+    "reject_control": 0
+  },
+  "ast_mismatch": 30,
+  "false_triggers": 0,
+  "utility_rows": 120,
+  "status": "node_mock_pass",
+  "interpretation": "independent Node parser instrumentation only; no model or tool execution"
+}

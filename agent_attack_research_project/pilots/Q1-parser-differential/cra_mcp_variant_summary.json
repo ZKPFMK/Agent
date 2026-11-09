@@ -1,0 +1,14 @@
+{
+  "rows": 240,
+  "candidate_success": 30,
+  "control_success": 0,
+  "false_triggers": 0,
+  "utility_rows": 240,
+  "adaptive_candidate_variants": [
+    "nested_args_duplicate",
+    "top_target_duplicate",
+    "unicode_equivalent_target"
+  ],
+  "status": "cra_mcp_variant_pass",
+  "interpretation": "real cra_mcp.adapter.ToolBox.call variant path with fake server; no real tool or project mutation"
+}

@@ -1,0 +1,9 @@
+{
+  "rows": 120,
+  "candidate_success": 30,
+  "control_success": 0,
+  "false_triggers": 0,
+  "utility_rows": 120,
+  "status": "cra_mcp_executor_pass",
+  "interpretation": "real cra_mcp.adapter.ToolBox.call parser path with fake in-memory server; no project mutation"
+}

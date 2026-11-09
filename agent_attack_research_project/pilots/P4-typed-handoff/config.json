@@ -1,0 +1,17 @@
+{
+  "arms": [
+    "clean",
+    "naive",
+    "candidate",
+    "mechanism_control",
+    "reject_control"
+  ],
+  "episodes": 10,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "value": "CANARY_A",
+  "safety": "synthetic local canaries only"
+}
