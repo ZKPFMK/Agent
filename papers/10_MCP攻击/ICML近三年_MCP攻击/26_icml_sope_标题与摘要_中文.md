@@ -3,7 +3,7 @@
 **原标题：**SOPE: Situation-Aware and Statistically Indistinguishable Privacy Exfiltration for MCP-enabled Agents  
 **攻击方法：**Scenario-aware and zerO-click Privacy Exfiltration（SOPE，情境感知与零点击隐私外泄）  
 **年份与会议：**2026，ICML。  
-**原文：**[本地 PDF](./ICML近三年_MCP攻击/26_icml_sope.pdf)。
+**原文：**[本地 PDF](./26_icml_sope.pdf)。
 
 ## 摘要
 
