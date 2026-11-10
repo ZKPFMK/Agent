@@ -25,7 +25,7 @@ MCP 攻击研究可以概括为：
 | **2505** | 工具选择操纵 | **MPMA** | 工具名称和描述 | 能否让 LLM 偏向选择攻击者的 MCP Server？ |
 | **2508** | 工具描述投毒 | **MCPTox** | 工具元数据和描述 | 能否让 Agent 把隐藏指令当成工具使用规则？ |
 | **2509** | 工具链组合攻击 | **Parasites in the Toolchain** | 外部内容和跨工具调用序列 | 多个单独合法的工具能否组成完整攻击链？ |
-| **2512 / 2603** | 综合安全基准 | **MCP-SafetyBench（MSB）** | Server、Host、User 多侧攻击面 | 能否在真实 MCP Server、多轮任务和跨服务器场景中系统评估多类攻击？ |
+| **2512** | 综合安全基准 | **MCP-SafetyBench（MSB）** | Server、Host、User 多侧攻击面 | 能否在真实 MCP Server、多轮任务和跨服务器场景中系统评估多类攻击？ |
 
 ## 四篇论文的递进关系
 
@@ -54,7 +54,7 @@ MPMA（2505） ─────────┐
 MCPTox（2508） ───────┘
 
 MPMA（2505） ─────────┐
-                     ├──> MCP-SafetyBench（2512；2603 v2，ICLR 2026）
+                     ├──> MCP-SafetyBench（2512）
 MCPTox（2508） ───────┘
 ```
 
