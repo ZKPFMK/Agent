@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <meta name="description" content="MCP 相关论文的可交互引用关系图，悬浮节点即可查看其直接引用的文章。">
+  <title>MCP 引用图谱</title>
+  <style>
+    /* Layout: a compact research console with a wide graph and a focused reading rail. */
+    :root {
+      --bg: #f4f7f8;
+      --surface: #ffffff;
+      --surface-2: #edf3f4;
+      --surface-3: #e3ecee;
+      --fg: #132328;
+      --muted: #5f7379;
+      --line: #cbd9dc;
+      --line-strong: #9ab3b8;
+      --accent: #087f8c;
+      --accent-soft: #d7f1f1;
+      --cited: #d26a35;
+      --cited-soft: #fff0e5;
+      --citing: #6879b5;
+      --citing-soft: #e7ebfb;
+      --core: #087f8c;
+      --core-soft: #e0f4f4;
+      --analysis: #6d5ca8;
+      --analysis-soft: #eeeafb;
+      --related: #a45a73;
+      --related-soft: #f7e9ef;
+      --shadow: rgba(19, 35, 40, 0.10);
+      --shadow-strong: rgba(19, 35, 40, 0.18);
+      --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-display: Georgia, "Songti SC", "STSong", serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #10191c;
+        --surface: #172427;
+        --surface-2: #1d2d31;
+        --surface-3: #26393d;
+        --fg: #e5f0f1;
+        --muted: #9db2b6;
+        --line: #355056;
+        --line-strong: #52747b;
+        --accent: #5bd1cf;
+        --accent-soft: #153f43;
+        --cited: #f0a06e;
+        --cited-soft: #422b20;
+        --citing: #a9b7f0;
+        --citing-soft: #29304e;
+        --core: #5bd1cf;
+        --core-soft: #173f43;
+        --analysis: #b9a9f2;
+        --analysis-soft: #302947;
+        --related: #eaa6bb;
+        --related-soft: #432936;
+        --shadow: rgba(0, 0, 0, 0.25);
+        --shadow-strong: rgba(0, 0, 0, 0.42);
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #10191c;
+      --surface: #172427;
+      --surface-2: #1d2d31;
+      --surface-3: #26393d;
+      --fg: #e5f0f1;
+      --muted: #9db2b6;
+      --line: #355056;
+      --line-strong: #52747b;
+      --accent: #5bd1cf;
+      --accent-soft: #153f43;
+      --cited: #f0a06e;
+      --cited-soft: #422b20;
+      --citing: #a9b7f0;
+      --citing-soft: #29304e;
+      --core: #5bd1cf;
+      --core-soft: #173f43;
+      --analysis: #b9a9f2;
+      --analysis-soft: #302947;
+      --related: #eaa6bb;
+      --related-soft: #432936;
+      --shadow: rgba(0, 0, 0, 0.25);
+      --shadow-strong: rgba(0, 0, 0, 0.42);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      padding-block: clamp(20px, 4vw, 48px);
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      transition: background 180ms ease, color 180ms ease;
+    }
+
+    button, input { font: inherit; }
+
+    button { color: inherit; }
+
+    button:focus-visible, input:focus-visible, [tabindex="0"]:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 65%, transparent);
+      outline-offset: 3px;
+    }
+
+    .app {
+      width: min(1560px, 100%);
+      margin: 0 auto;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 4px 2px 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    h1 {
+      max-width: 720px;
+      margin-bottom: 10px;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4.8vw, 58px);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.02;
+      text-wrap: balance;
+    }
+
+    .intro {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .mast-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .control {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      padding: 8px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+    }
+
+    .control:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 11px 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-mark {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--line-strong);
+    }
+
+    .legend-mark.cited { background: var(--cited); }
+    .legend-mark.citing { background: var(--citing); }
+    .legend-mark.core { background: var(--core); }
+    .legend-mark.analysis { background: var(--analysis); }
+    .legend-mark.related { background: var(--related); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 330px);
+      gap: 14px;
+      align-items: start;
+      padding-top: 14px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 12px 32px var(--shadow);
+    }
+
+    .graph-panel { min-width: 0; overflow: hidden; }
+
+    .panel-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      padding: 13px 16px;
+    }
+
+    .panel-label {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .panel-hint {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .graph-scroll {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      padding: 10px;
+    }
+
+    #citationGraph {
+      display: block;
+      width: 100%;
+      min-width: 760px;
+      height: auto;
+      overflow: visible;
+    }
+
+    .lane {
+      fill: var(--surface-2);
+      stroke: var(--line);
+      stroke-width: 1;
+    }
+
+    .lane-title {
+      fill: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .edge {
+      fill: none;
+      stroke: var(--line-strong);
+      stroke-width: 1.4;
+      opacity: 0.68;
+      transition: opacity 150ms ease, stroke 150ms ease, stroke-width 150ms ease;
+    }
+
+    .edge.edge-dim { opacity: 0.08; }
+    .edge.edge-cited { stroke: var(--cited); stroke-width: 2.8; opacity: 1; }
+    .edge.edge-citing { stroke: var(--citing); stroke-width: 2.3; opacity: 0.95; }
+
+    .node {
+      cursor: pointer;
+      outline: none;
+      transition: opacity 150ms ease, filter 150ms ease, transform 150ms ease;
+    }
+
+    .node rect {
+      stroke-width: 1.3;
+      transition: fill 150ms ease, stroke 150ms ease, stroke-width 150ms ease;
+    }
+
+    .node[data-group="core"] rect { fill: var(--core-soft); stroke: var(--core); }
+    .node[data-group="analysis"] rect { fill: var(--analysis-soft); stroke: var(--analysis); }
+    .node[data-group="related"] rect { fill: var(--related-soft); stroke: var(--related); }
+
+    .node .name {
+      fill: var(--fg);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .node .date {
+      fill: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .node.is-dim { opacity: 0.13; }
+    .node.is-selected { filter: drop-shadow(0 6px 7px var(--shadow-strong)); }
+    .node.is-selected rect { stroke: var(--accent); stroke-width: 3; fill: var(--accent-soft); }
+    .node.is-cited { filter: drop-shadow(0 5px 6px var(--shadow)); }
+    .node.is-cited rect { stroke: var(--cited); stroke-width: 2.5; fill: var(--cited-soft); }
+    .node.is-citing rect { stroke: var(--citing); stroke-width: 2.2; fill: var(--citing-soft); }
+
+    .details {
+      position: sticky;
+      top: 16px;
+      padding: 18px;
+    }
+
+    .details-kicker {
+      margin-bottom: 12px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .details h2 {
+      margin-bottom: 6px;
+      font-size: 22px;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+
+    .details-meta {
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .detail-rule {
+      height: 1px;
+      margin: 0 0 16px;
+      background: var(--line);
+    }
+
+    .relation-block + .relation-block { margin-top: 18px; }
+
+    .relation-label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .relation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .relation-button {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--fg);
+      cursor: pointer;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 12px;
+      line-height: 1.3;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+
+    .relation-button:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer-note span:last-child { text-align: right; }
+
+    @media (max-width: 900px) {
+      .masthead { flex-direction: column; }
+      .mast-actions { justify-content: flex-start; }
+      .workspace { grid-template-columns: 1fr; }
+      .details { position: static; }
+    }
+
+    @media (max-width: 560px) {
+      body { font-size: 14px; }
+      .masthead { padding-bottom: 18px; }
+      h1 { font-size: 34px; }
+      .panel-bar { align-items: flex-start; flex-direction: column; gap: 4px; }
+      .panel-hint { text-align: left; }
+      .footer-note { flex-direction: column; gap: 4px; }
+      .footer-note span:last-child { text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">MCP RESEARCH / CITATION MAP</p>
+        <h1>MCP 引用图谱</h1>
+        <p class="intro">悬浮或聚焦一篇文章，直接引用的文章会以橙色浮现，被它引用的文章会以蓝色标出，其余节点会淡出。</p>
+      </div>
+      <div class="mast-actions">
+        <button class="control" id="resetButton" type="button">显示全部</button>
+        <button class="control" id="themeButton" type="button">主题：系统</button>
+      </div>
+    </header>
+
+    <div class="legend" aria-label="图例">
+      <span class="legend-item"><span class="legend-mark core"></span>MCP 核心研究</span>
+      <span class="legend-item"><span class="legend-mark analysis"></span>防御与分析</span>
+      <span class="legend-item"><span class="legend-mark related"></span>MCP 相关 Agent 攻击</span>
+      <span class="legend-item"><span class="legend-mark cited"></span>当前文章引用的节点</span>
+      <span class="legend-item"><span class="legend-mark citing"></span>引用当前文章的节点</span>
+    </div>
+
+    <section class="workspace" aria-label="MCP 论文引用关系">
+      <section class="panel graph-panel">
+        <div class="panel-bar">
+          <span class="panel-label">DIRECT CITATIONS</span>
+          <span class="panel-hint">箭头方向：被引用文章 → 引用文章</span>
+        </div>
+        <div class="graph-scroll">
+          <svg id="citationGraph" viewBox="0 0 1240 1040" role="img" aria-label="MCP 相关文章引用关系图">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line-strong)"></path>
+              </marker>
+              <marker id="arrow-cited" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cited)"></path>
+              </marker>
+              <marker id="arrow-citing" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--citing)"></path>
+              </marker>
+            </defs>
+            <g aria-hidden="true">
+              <rect class="lane" x="18" y="22" width="1204" height="392" rx="16"></rect>
+              <text class="lane-title" x="42" y="49">MCP 核心安全研究</text>
+              <rect class="lane" x="18" y="438" width="1204" height="302" rx="16"></rect>
+              <text class="lane-title" x="42" y="465">MCP 防御与分析</text>
+              <rect class="lane" x="18" y="764" width="1204" height="246" rx="16"></rect>
+              <text class="lane-title" x="42" y="791">MCP 相关 Agent 攻击研究</text>
+            </g>
+            <g id="edgeLayer" aria-hidden="true"></g>
+            <g id="nodeLayer"></g>
+          </svg>
+        </div>
+      </section>
+
+      <aside class="panel details" aria-live="polite">
+        <div class="details-kicker">ARTICLE INSPECTOR</div>
+        <h2 id="detailTitle">悬浮查看引用</h2>
+        <p class="details-meta" id="detailMeta">选择一个节点开始</p>
+        <div class="detail-rule"></div>
+        <div class="relation-block">
+          <div class="relation-label">当前文章引用</div>
+          <div class="relation-list" id="outgoingList"><p class="empty-state">悬浮或聚焦节点后显示。</p></div>
+        </div>
+        <div class="relation-block">
+          <div class="relation-label">引用当前文章</div>
+          <div class="relation-list" id="incomingList"><p class="empty-state">悬浮或聚焦节点后显示。</p></div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="footer-note">
+      <span>时间：YYMM，例如 2605 = 2026 年 5 月；仅有会议或期刊年份时保留四位年份。</span>
+      <span>仅纳入与 MCP 直接相关的文章。</span>
+    </div>
+  </main>
+
+  <script>
+    const nodes = [
+      { id: 'mcpXkit', label: 'MCPXKIT', lines: ['MCPXKIT'], time: '2508', group: 'core', groupLabel: 'MCP 核心研究', x: 120, y: 95 },
+      { id: 'when', label: 'When MCP Servers Attack', lines: ['When MCP Servers', 'Attack'], time: '2509', group: 'core', groupLabel: 'MCP 核心研究', x: 380, y: 95 },
+      { id: 'beyond', label: 'Beyond the Protocol', lines: ['Beyond the', 'Protocol'], time: '2506', group: 'core', groupLabel: 'MCP 核心研究', x: 640, y: 95 },
+      { id: 'first', label: 'MCP at First Glance', lines: ['MCP at First', 'Glance'], time: '2506', group: 'core', groupLabel: 'MCP 核心研究', x: 900, y: 95 },
+      { id: 'redteam', label: 'Red-Teaming Coding Agents', lines: ['Red-Teaming Coding', 'Agents'], time: '2509', group: 'core', groupLabel: 'MCP 核心研究', x: 120, y: 220 },
+      { id: 'mcptox', label: 'MCPTox', lines: ['MCPTox'], time: '2508', group: 'core', groupLabel: 'MCP 核心研究', x: 380, y: 220 },
+      { id: 'mpma', label: 'MPMA', lines: ['MPMA'], time: '2505', group: 'core', groupLabel: 'MCP 核心研究', x: 640, y: 220 },
+      { id: 'mcsb', label: 'MCP-SafetyBench', lines: ['MCP-SafetyBench'], time: '2512', group: 'core', groupLabel: 'MCP 核心研究', x: 900, y: 220 },
+      { id: 'msb', label: 'MCP Security Bench (MSB)', lines: ['MCP Security Bench', '(MSB)'], time: '2510', group: 'core', groupLabel: 'MCP 核心研究', x: 120, y: 345 },
+      { id: 'parasites', label: 'Parasites in the Toolchain', lines: ['Parasites in the', 'Toolchain'], time: '2509', group: 'core', groupLabel: 'MCP 核心研究', x: 380, y: 345 },
+      { id: 'sope', label: 'SOPE', lines: ['SOPE'], time: '2605', group: 'core', groupLabel: 'MCP 核心研究', x: 640, y: 345 },
+      { id: 'copex', label: 'COPEX', lines: ['COPEX'], time: '2610', group: 'core', groupLabel: 'MCP 核心研究', x: 900, y: 345 },
+
+      { id: 'third', label: 'Third-Party Safety Risks', lines: ['Third-Party Safety', 'Risks'], time: '2506', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 120, y: 505 },
+      { id: 'tool', label: 'Securing the Tool Layer', lines: ['Securing the', 'Tool Layer'], time: '2026', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 380, y: 505 },
+      { id: 'mcpguard', label: 'MCP-Guard', lines: ['MCP-Guard'], time: '2507', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 640, y: 505 },
+      { id: 'safe', label: 'SafeMCP', lines: ['SafeMCP'], time: '2026', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 900, y: 505 },
+      { id: 'mcip', label: 'MCIP', lines: ['MCIP'], time: '2505', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 120, y: 640 },
+      { id: 'threat', label: 'MCP Threat Modeling', lines: ['MCP Threat', 'Modeling'], time: '2026', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 380, y: 640 },
+      { id: 'soc', label: 'MCP Security Framework (SOC)', lines: ['MCP Security', 'Framework (SOC)'], time: '2026', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 640, y: 640 },
+      { id: 'remote', label: 'Remote MCP Server Attack Surfaces', lines: ['Remote MCP Server', 'Attack Surfaces'], time: '2026', group: 'analysis', groupLabel: 'MCP 防御与分析', x: 900, y: 640 },
+
+      { id: 'ama', label: 'Attractive Metadata Attack', lines: ['Attractive Metadata', 'Attack'], time: '2508', group: 'related', groupLabel: 'MCP 相关 Agent 攻击', x: 220, y: 865 },
+      { id: 'invisible', label: 'Invisible Prompts', lines: ['Invisible Prompts'], time: '2025', group: 'related', groupLabel: 'MCP 相关 Agent 攻击', x: 500, y: 865 },
+      { id: 'potemkin', label: 'Potemkin', lines: ['Potemkin'], time: '2026', group: 'related', groupLabel: 'MCP 相关 Agent 攻击', x: 780, y: 865 },
+      { id: 'a2m', label: 'A2M', lines: ['A2M'], time: '2026', group: 'related', groupLabel: 'MCP 相关 Agent 攻击', x: 1060, y: 865 }
+    ];
+
+    const edges = [
+      ['mpma', 'mcpXkit'], ['mpma', 'when'], ['mpma', 'msb'], ['mpma', 'mcsb'], ['mpma', 'parasites'], ['mpma', 'a2m'], ['mpma', 'remote'], ['mpma', 'threat'], ['mpma', 'mcpguard'],
+      ['mcptox', 'redteam'], ['mcptox', 'msb'], ['mcptox', 'mcsb'], ['mcptox', 'parasites'], ['mcptox', 'sope'], ['mcptox', 'copex'], ['mcptox', 'threat'], ['mcptox', 'remote'], ['mcptox', 'tool'],
+      ['mcpXkit', 'when'], ['mcpXkit', 'parasites'], ['mcpXkit', 'copex'], ['mcpXkit', 'soc'], ['mcpXkit', 'mcpguard'],
+      ['third', 'when'], ['third', 'safe'], ['third', 'mcpguard'], ['mcip', 'when'], ['mcip', 'msb'], ['mcip', 'mcsb'], ['mcip', 'mcpguard'],
+      ['beyond', 'when'], ['beyond', 'msb'], ['beyond', 'parasites'], ['beyond', 'sope'], ['beyond', 'a2m'], ['beyond', 'threat'], ['beyond', 'remote'], ['beyond', 'tool'],
+      ['when', 'parasites'], ['when', 'remote'], ['when', 'tool'],
+      ['first', 'msb'], ['first', 'parasites'], ['first', 'copex'],
+      ['safe', 'mcsb'], ['mcsb', 'sope'], ['mcsb', 'copex'], ['mcsb', 'threat'], ['msb', 'threat'], ['parasites', 'sope'], ['parasites', 'a2m'], ['mcpguard', 'threat'],
+      ['ama', 'potemkin'], ['ama', 'a2m']
+    ].map(([from, to], index) => ({ id: `edge-${index}`, from, to }));
+
+    const nodeMap = new Map(nodes.map(node => [node.id, node]));
+    const outgoing = new Map(nodes.map(node => [node.id, []]));
+    const incoming = new Map(nodes.map(node => [node.id, []]));
+    edges.forEach(edge => {
+      outgoing.get(edge.from).push(edge.to);
+      incoming.get(edge.to).push(edge.from);
+    });
+
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const NODE_W = 188;
+    const NODE_H = 68;
+    const edgeLayer = document.getElementById('edgeLayer');
+    const nodeLayer = document.getElementById('nodeLayer');
+    const nodeElements = new Map();
+    const edgeElements = new Map();
+
+    function makeSvg(tag, attributes = {}) {
+      const element = document.createElementNS(SVG_NS, tag);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+      return element;
+    }
+
+    function edgePath(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const scale = 1 / Math.max(Math.abs(dx) / (NODE_W / 2), Math.abs(dy) / (NODE_H / 2));
+      const startX = from.x + dx * scale;
+      const startY = from.y + dy * scale;
+      const endX = to.x - dx * scale;
+      const endY = to.y - dy * scale;
+      return `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+    }
+
+    edges.forEach(edge => {
+      const path = makeSvg('path', {
+        class: 'edge',
+        id: edge.id,
+        d: edgePath(nodeMap.get(edge.from), nodeMap.get(edge.to)),
+        'marker-end': 'url(#arrow)'
+      });
+      path.dataset.from = edge.from;
+      path.dataset.to = edge.to;
+      edgeLayer.appendChild(path);
+      edgeElements.set(edge.id, path);
+    });
+
+    nodes.forEach(node => {
+      const group = makeSvg('g', {
+        class: 'node',
+        tabindex: '0',
+        role: 'button',
+        'aria-label': `${node.label}，${node.time}`,
+        'data-id': node.id,
+        'data-group': node.group,
+        transform: `translate(${node.x - NODE_W / 2} ${node.y - NODE_H / 2})`
+      });
+      const rect = makeSvg('rect', { x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 12 });
+      const text = makeSvg('text', { class: 'name', x: 15, y: node.lines.length > 1 ? 27 : 33 });
+      node.lines.forEach((line, index) => {
+        const span = makeSvg('tspan', { x: 15, dy: index === 0 ? 0 : 16 });
+        span.textContent = line;
+        text.appendChild(span);
+      });
+      const date = makeSvg('text', { class: 'date', x: 15, y: 57 });
+      date.textContent = node.time;
+      group.append(rect, text, date);
+      group.addEventListener('mouseenter', () => focusNode(node.id));
+      group.addEventListener('mouseleave', resetGraph);
+      group.addEventListener('focus', () => focusNode(node.id));
+      group.addEventListener('blur', resetGraph);
+      nodeLayer.appendChild(group);
+      nodeElements.set(node.id, group);
+    });
+
+    function relationButton(id) {
+      const node = nodeMap.get(id);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'relation-button';
+      button.textContent = `${node.label}（${node.time}）`;
+      button.addEventListener('click', () => {
+        focusNode(id);
+        nodeElements.get(id)?.focus({ preventScroll: true });
+      });
+      return button;
+    }
+
+    function renderRelationList(container, ids) {
+      container.replaceChildren();
+      if (!ids.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = '当前图中未确认直接关系。';
+        container.appendChild(empty);
+        return;
+      }
+      ids.forEach(id => container.appendChild(relationButton(id)));
+    }
+
+    function updateInspector(id) {
+      const node = nodeMap.get(id);
+      document.getElementById('detailTitle').textContent = node.label;
+      document.getElementById('detailMeta').textContent = `${node.groupLabel} · ${node.time}`;
+      renderRelationList(document.getElementById('outgoingList'), outgoing.get(id));
+      renderRelationList(document.getElementById('incomingList'), incoming.get(id));
+    }
+
+    function focusNode(id) {
+      updateInspector(id);
+      const cited = new Set(outgoing.get(id));
+      const citing = new Set(incoming.get(id));
+      nodeElements.forEach((element, nodeId) => {
+        element.classList.toggle('is-selected', nodeId === id);
+        element.classList.toggle('is-cited', cited.has(nodeId));
+        element.classList.toggle('is-citing', citing.has(nodeId));
+        element.classList.toggle('is-dim', nodeId !== id && !cited.has(nodeId) && !citing.has(nodeId));
+      });
+      edgeElements.forEach((element) => {
+        const isCited = element.dataset.from === id;
+        const isCiting = element.dataset.to === id;
+        element.classList.toggle('edge-cited', isCited);
+        element.classList.toggle('edge-citing', isCiting);
+        element.classList.toggle('edge-dim', !isCited && !isCiting);
+        element.setAttribute('marker-end', isCited ? 'url(#arrow-cited)' : isCiting ? 'url(#arrow-citing)' : 'url(#arrow)');
+      });
+    }
+
+    function resetGraph() {
+      document.getElementById('detailTitle').textContent = '悬浮查看引用';
+      document.getElementById('detailMeta').textContent = '选择一个节点开始';
+      renderRelationList(document.getElementById('outgoingList'), []);
+      renderRelationList(document.getElementById('incomingList'), []);
+      nodeElements.forEach(element => element.classList.remove('is-selected', 'is-cited', 'is-citing', 'is-dim'));
+      edgeElements.forEach(element => {
+        element.classList.remove('edge-cited', 'edge-citing', 'edge-dim');
+        element.setAttribute('marker-end', 'url(#arrow)');
+      });
+    }
+
+    document.getElementById('resetButton').addEventListener('click', resetGraph);
+
+    const themeButton = document.getElementById('themeButton');
+    const themes = ['system', 'light', 'dark'];
+    let themeIndex = 0;
+    themeButton.addEventListener('click', () => {
+      themeIndex = (themeIndex + 1) % themes.length;
+      const theme = themes[themeIndex];
+      if (theme === 'system') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', theme);
+      themeButton.textContent = `主题：${theme === 'system' ? '系统' : theme === 'light' ? '浅色' : '深色'}`;
+    });
+
+    resetGraph();
+  </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+Context manipulation attacks : Web agents are susceptible to corrupted memory
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+2 Background and Related Work
+2.1 Web navigation agents
+3 Context Manipulation Attacks
+3.1 Formalizing the AI Agent Framework
+3.2 Context Manipulation
+4 Context manipulation attacks on Web navigation agents
+4.1 Threat model
+4.2 Vulnerability to prompt injection attacks
+4.3 Vulnerability to context manipulation attacks
+5 Evaluation
+5.1 Plan Injection Benchmark
+5.2 WebVoyager-Privacy Benchmark
+5.3 Evaluation metrics
+6 Results
+6.1 Plan Injection Benchmark results
+6.2 WebVoyager-Privacy attacks
+7 Conclusion
+References
+License: CC BY 4.0
+arXiv:2506.17318v1 [cs.CR] 18 Jun 2025
+Context manipulation attacks : Web agents are susceptible to corrupted memory
+Atharv Singh Patlan
+Affiliation: Princeton University
+Ashwin Hebbar
+Affiliation: Princeton University
+Pramod Viswanath
+Affiliation: Princeton University
+Prateek Mittal
+Affiliation: Princeton University
+Correspondence to: {atharvsp, hebbar}@princeton.edu
+Abstract
+Autonomous web navigation agents, which translate natural language instructions into sequences of browser actions, are increasingly deployed for complex tasks spanning e-commerce, information retrieval, and content discovery. Due to the stateless nature of large language models (LLMs), these agents rely heavily on external memory systems to maintain context across interactions. Unlike centralized systems where context is securely stored server-side, agent memory is often managed client-side or by third-party applications, creating significant security vulnerabilities - this was recently exploited to attack production systems.
+We introduce and formalize “plan injection,” a novel context manipulation attack that corrupts these agents’ internal task representations by targeting this vulnerable context. Through systematic evaluation of two popular web agents: Browser-use, and Agent-E, we show that plan injections bypass robust prompt injection defenses, achieving upto 3x higher attack success rates than comparable prompt-based attacks. Furthermore, “context-chained injections”, which craft logical bridges between legitimate user goals and attacker objectives, leads to a 17.7% increase attack success rate for privacy exfiltration tasks. Our findings highlight that secure memory handling must be a first-class concern in agentic systems.
+Keywords: Machine Learning, ICML
+††affiliationnotice: Equal contribution
+1 Introduction
+AI agents have rapidly transformed how we interact with complex digital systems, automating multi-step tasks that previously required human supervision (Putta et al., 2024; Shen et al., 2024; Yang et al., 2024). Computer use agents, systems that manipulate interfaces on behalf of users, represent a particularly impactful application (Anthropic, 2024; Manus, 2025). An important component of these computer use agents are specialized agents for web navigation, used for automating browsing, form-filling, and content extraction across diverse online environments. These agents translate natural language instructions into precise browser actions, enabling non-technical users to accomplish complex online tasks through simple directives.
+While these agents offer remarkable utility (Su et al., 2025; Wang et al., 2024), they introduce significant security vulnerabilities not present in traditional language model applications. Prompt injection attacks, where malicious content embedded in retrieved data hijacks agent behavior by overriding original user instructions, create unique risks for web navigation agents processing untrusted sources (Greshake et al., 2023; Debenedetti et al., 2024; Zhan et al., 2024). Further, recent works have shown that web agents demonstrate unsafe behavior and can be easily jailbroken, even when built on models specifically trained to resist such attacks (Kumar et al., 2024; Chiang et al., 2025).
+As formalized in frameworks like CoALA (Sumers et al., 2023), language models’ inherently stateless architecture necessitates dedicated memory modules for agents to store observations and retrieve context when navigating dynamic environments. Commercial chat systems like ChatGPT and Claude address this limitation through centrally managed conversation history, creating a security boundary that largely prevents third-party tampering with internal memory states.
+However, this security boundary disappears in agentic applications where context management is decentralized across client devices or third-party services. This shift introduces a critical vulnerability: malicious actors can manipulate stored context by injecting fictitious plans or harmful directives, particularly when chat contexts are stored with third-party cloud providers that could modify content beneath users’ awareness threshold.
+Patlan et al. (Patlan et al., 2025b) recently demonstrated this vulnerability through a general attack vector called “context manipulation” against ElizaOS, a financial agent platform. By invisibly injecting “fake” entries into an agent’s stored history, they successfully hijacked its reasoning process to authorize unauthorized transactions that would otherwise be rejected. While their work focused on financial agents, these principles extend to any agent architecture relying on persistent memory, including web navigation agents.
+Some multi-step web agents implement architectural choices that appear to mitigate these risks. Agent-E (Abuelsaad et al., 2024) employs a hierarchical design that separates planning from execution: a high-level planner generates subtask sequences executed by a separate browser-navigation component. This separation creates security boundaries between components with limited shared state. The planner’s ephemeral task representation, existing only for the duration of a single interaction, seemingly protects against the persistent memory vulnerabilities exploited in systems like ElizaOS.
+In this work, we challenge that assumption by demonstrating how context manipulation principles can adapt to target planner-based agents. We first formalize how a planner’s internal state and sub-task sequence can be corrupted through carefully crafted inputs, then demonstrate concrete attack instances against an Agent-E–style pipeline.
+Our contributions include:
+•
+We introduce and formalize plan injection, a specific form of context manipulation that targets the agent’s persistent task plan; distinct from prompt- or data-level attacks. We show that plan injections are more effective than analogous indirect prompt injections.
+•
+We demonstrate that context-chained injections, where malicious instructions are disguised as logical follow-ups to legitimate tasks, significantly outperform non-contextual injections, with success rates up to 3x higher.
+•
+We quantify how vulnerability varies based on agent design and task nature: hierarchical architectures like Agent-E provide better protection compared to simpler agents, while subjective tasks (like opinion queries) prove far more exploitable (94.7% success rate) than factual ones.
+Figure 1: A Plan injection attack to leak user’s private data. A carefully crafted plan injection (in red) related to both the user’s and attacker’s objective is used.
+2 Background and Related Work
+2.1 Web navigation agents
+There has been significant advancements in AI agents in recent months, with web navigation agents emerging as a key domain (Zheng et al., 2024; Zhang et al., 2025; Shahbandeh et al., 2024; Iong et al., 2024; Liu et al., 2024a).
+These agents translate natural-language instructions into sequences of browser actions (clicks, keystrokes, form-fills) on live websites. The WebVoyager benchmark (He et al., 2024) provides a unified evaluation of success rates across diverse web tasks.
+We consider two leading open-source agentic systems : Browser-use (Muller & Zunic, 2025) and Agent-E (Abuelsaad et al., 2024) (based on the WebVoyager leaderboard (Steel.dev, 2024)), whose architectures exemplify current approaches in this domain.
+Browser-use uses a controller agent to decide on the single next step to take by referencing the user’s goal as well as current and past execution trajectory from the memory.
+Agent-E employs a more sophisticated hierarchical architecture with separate planning and execution components. A Planner Agent breaks down user instructions into ordered sub-tasks, and then orchestrates a Browser Navigation Agent, which executes these tasks through predefined DOM interaction primitives. After every step, the planner agent reviews the current progress by matching it with the proposed plan, adjusts the plan if necessary, and then directs the Navigation Agent to execute the next task in the plan. This separation creates distinct structures: high-level task plans in the planner agent for Agent-E and detailed execution traces in the controller agent for Browser-use.
+Both systems rely heavily on persistent context to maintain coherence across multi-step interactions, creating potential attack surfaces where memory manipulation could compromise agent behavior.
+Attacks on language agents.
+Language agents face an evolving landscape of security threats. Indirect prompt injection attacks, where adversarial instructions are embedded in retrieved content, represent the most prominent vulnerability (Greshake et al., 2023; Zhan et al., 2024). These attacks have been ranked as the top security risk for LLMs (OWASP Foundation, 2024), enabling adversaries to manipulate agent behavior, extract sensitive information, and trigger unauthorized actions without direct user interface access (Wu et al., 2024; Debenedetti et al., 2024). Despite significant research efforts, comprehensive defenses remain elusive (Debenedetti et al., 2025; Hines et al., 2024; Chen et al., 2024b). A related attack vector, direct prompt injection (Perez & Ribeiro, 2022; Chen et al., 2024a), exploits weaknesses in model safety guardrails through carefully crafted user inputs, similar to how SQL injection bypasses application security boundaries.
+Attacks on agent memory.
+Beyond prompt injection attacks, recent work highlights a distinct and underexplored threat: manipulation of agent memory. AgentPoison (Chen et al., 2024c) optimizes backdoor triggers to bias retrieval from poisoned knowledge bases, corrupting agents’ context without altering prompts. Similarly, trajectory poisoning attacks such as MINJA (Dong et al., 2025) exploit agents that query prior interaction histories for reasoning, injecting crafted episodes to misguide current decisions. A more direct form of memory manipulation was shown in the attack on ElizaOS (Patlan et al., 2025b), where tampering with stored conversation history in an external database led to unauthorized financial actions. These attacks reveal architectural flaws common to many agents: persistent session memory, unverified historical data, and weak isolation between memory modules.
+The practical feasibility of these attacks motivates our investigation into more complex multi-step agents that rely heavily on memory for sequential decision making. We demonstrate that memory corruption via “plan injection” can compromise web navigation agents, extending these security concerns to a broader class of agentic systems.
+3 Context Manipulation Attacks
+Context Manipulation Attacks are a novel and general threat model that generalizes existing prompt injection vulnerabilities and introduces memory-based attacks to adversarially influence AI agents.
+We follow the formalization introduced by Patlan et al. (Patlan et al., 2025b), adapted to our setting, below.
+3.1 Formalizing the AI Agent Framework
+AI agents operate through an iterative cycle involving four key architectural components: a Perception Layer that processes inputs, a Memory System that maintains state, a Decision Engine that reasons over available information, and an Action Module that executes commands. At each timestep tt, the agent maintains a context ct=(pt,dt,k,ht)c_{t}=(p_{t},d_{t},k,h_{t}). Here, ptp_{t} represents user prompts and dtd_{t} captures external data (API responses, webpage content) from the Perception Layer, while kk and hth_{t} represent static knowledge and interaction history within the Memory System.
+The agent’s decision engine MM maps this context to a probability distribution over possible action sequences: M:C→Δ⁡(A)M:C\to\Delta(A), with actions selected as 𝐚t=arg⁡max𝐚∈A⁡P⁡(𝐚∣ct)\mathbf{a}_{t}=\arg\max_{\mathbf{a}\in A}P(\mathbf{a}\mid c_{t}). This action could involve generating text responses, making API calls, executing smart contracts, updating databases, or controlling physical devices. Actions update the environment and context according to ct+1=ℱ⁡(ct,𝐚t)c_{t+1}=\mathcal{F}(c_{t},\mathbf{a}_{t}). For instance, ht+1h_{t+1} would append any newly generated conversation, and dt+1d_{t+1} may include fresh data updated by 𝐚t\mathbf{a}_{t}.
+Our representative web navigation agent, Agent-E, maps directly to this framework: its Planner Agent serves as the Decision Engine, the Browser Navigation Agent functions as the Action Module, and the context storage implements the Memory System.
+3.2 Context Manipulation
+We model adversarial manipulation of context as the injection of a bounded perturbation δ∈Δ\delta\in\Delta into one or more components of ctc_{t}, resulting in a corrupted context:
+ct∗=ct⊕δ,‖δ‖≤βc^{*}_{t}=c_{t}\oplus\delta,\quad\|\delta\|\leq\beta
+(1)
+where ‖δ‖≤β\|\delta\|\leq\beta constrains the size of manipulation and ⊕\oplus represents injection into specific context components.
+Figure 2: The information flow and context manipulation attack vector of the agent system.
+As illustrated in Figure 2, this creates three primary attack vectors based on the component that is targeted:
+Context manipulation via Direct Prompt Injection (DPI). Attackers embed malicious instructions directly within user prompts:
+c∗=(pt⊕δp,dt,k,ht)c^{*}=(p_{t}\oplus\delta_{p},d_{t},k,h_{t})
+(2)
+Context manipulation via Indirect Prompt Injection (IPI). This attack targets external data sources:
+c∗=(pt,dt⊕δd,k,ht)c^{*}=(p_{t},d_{t}\oplus\delta_{d},k,h_{t})
+(3)
+For web agents, this involves embedding malicious instructions in webpages that the agent retrieves and processes as legitimate content; a vulnerability ranked as the top security risk for LLM applications (OWASP Foundation, 2024).
+Context manipulation via Memory Injection (MI). This attack vector manipulates the agent’s stored interaction history:
+c∗=(pt,dt,k,ht⊕δh)c^{*}=(p_{t},d_{t},k,h_{t}\oplus\delta_{h})
+(4)
+Memory injection operates through two primary mechanisms:
+•
+Direct memory injection modifies backend storage such as conversation logs or state files. While this might initially seem to require privileged access, multiple practical scenarios make it feasible in deployed systems: (1) insecure client-side storage without proper encryption or access controls, (2) third-party cloud services used for context storage, and (3) compromised browser extensions or plugins that interact with agents.
+Indeed, this was recently seen in real-life when a publicly accessible ClickHouse database belonging to DeepSeek was found exposing chat contexts, API keys, and internal access tokens; highlighting the practicality of this threat vector (Nagli, 2025).
+•
+Indirect memory injection leverages earlier manipulation (often via prompt injection) to contaminate memory over time:
+c∗=(pt,dt,k,ht−1⊕ct−1∗)c^{*}=(p_{t},d_{t},k,h_{t-1}\oplus c^{*}_{t-1})
+(5)
+Patlan et al. (Patlan et al., 2025a; Patlan et al., 2025b) demonstrated this attack against ElizaOS, a Web3 financial agent, by using indirect memory injection to poison shared conversation history that was automatically retrieved in future interactions with different users. Malicious instructions in the injection enabled adversaries to redirect cryptocurrency transactions to attacker-controlled wallets across sessions. This approach creates persistent vulnerabilities without requiring direct memory access.
+Context Manipulation via Plan Injection. For web-browsing agents such as Agent-E, the session in one execution is independent of previous executions. Thus, modifying past history is not feasible. However, to compensate for this lack of memory, Agent-E augments the context provided to its planner agent in session ii and timestep tt as ci,t=(pi,di,t,k,hi,t,Pi)c_{i,t}=(p_{i},d_{i,t},k,h_{i,t},P_{i}), where pi,Pip_{i},P_{i} are the user’s task and generated plan for the it​hi^{th} session respectively.
+Analogous to direct memory injection, a plan injection directly modifies the high-level task plan: PiP_{i} injected into the planner’s context
+c∗=(pi,di,t,k,hi,t,Pi⊕δP)c^{*}=(p_{i},d_{i,t},k,h_{i,t},P_{i}\oplus\delta_{P})
+(6)
+4 Context manipulation attacks on Web navigation agents
+Given the demonstrated practicality of both direct and indirect memory injection in production systems, we now evaluate how vulnerable web navigation agents are to corrupted context. For our systematic analysis, we employ direct memory injection and plan injection - the targeted modification of an agent’s stored context. This approach allows us to precisely measure agent resilience to context manipulation while simulating the effects that could result from various real-world attack vectors, including the indirect memory injection by Patlan et al. (Patlan et al., 2025b).
+4.1 Threat model
+Constraints on the attacker. We deliberately consider a restricted adversarial capability to evaluate the minimum access required for successful attacks:
+1) The attacker cannot modify the user’s original instruction p0p_{0}. 2) The attacker cannot modify browser observations (which would constitute dt⊕δdd_{t}\oplus\delta_{d}). 3) The attacker cannot alter system prompts or the agent’s code (part of kk). 4) The attacker can only inject content δh\delta_{h} into the stored context hth_{t}.
+This represents the weakest form of context manipulation, allowing us to establish a lower bound on vulnerability. Our focus on this restricted attack model provides a systematic evaluation of how susceptible web navigation agents are to even minimal context corruption - an increasingly relevant concern as agents deploy at scale with complex memory architectures.
+Attacker’s objectives. Given a user’s legitimate instruction p0p_{0}, the attacker aims to manipulate the agent’s behavior by corrupting its memory state. Specifically, for a victim query directing the agent to accomplish task TvT_{v}, the attacker’s goal is to induce the agent to either: (1) perform an unauthorized task TaT_{a} in addition to TvT_{v}, (2) substitute TvT_{v} with a malicious alternative TaT_{a}, or (3) perform TvT_{v} but with compromised reasoning or data manipulation that benefits the attacker. These objectives manifest in four concrete attack types: false reasoning, advertisement injection, privacy leakage, and goal hijacking.
+4.2 Vulnerability to prompt injection attacks
+Web browser agents are vulnerable to prompt injection. Before examining vulnerabilities in memory mechanisms, we discovered that existing security measures of the considered agents are woefully inadequate. Browser-use and Agent-E are susceptible to prompt injection attacks originating from websites it browses - this vulnerability is well-documented in other agentic systems (Zhan et al., 2024; Yi et al., 2023).
+A strawman prompt injection attack via a public paste on pastebin.com was found to achieve several attacker objectives, including prompt leakage, private information exfiltration, and goal hijacking.
+Defending against prompt injections
+Comprehensive defense against prompt injection remains an unsolved challenge in LLM security research (Debenedetti et al., 2025; Chen et al., 2024a; Chen et al., 2024b). Nevertheless, we implement two complementary defense strategies following recent literature (Yi et al., 2023; Zhan et al., 2024). First, we enhanced boundary awareness through a Sandwich defense (Debenedetti et al., 2024; Schulhoff, 2023; Liu et al., 2024b), wrapping external content in <data> tags and explicitly instructing the agent that retrieved content is data, not executable instructions.
+Second, we incorporated explicit safety guidelines in the system prompt (Secure) warning against tool misuse, following the “helpful, honest, and harmless” paradigm in alignment research (Bai et al., 2022; Hubinger et al., 2024). These prompt-based defenses significantly improved Browser-use and Agent-E’s robustness - the agent now correctly identifies and rejects malicious instructions from external sources, acknowledging safety concerns and terminating potentially harmful tasks.
+While these methods cannot guarantee complete protection, they successfully mitigate most naive prompt injection attacks, establishing a baseline security level against which we can evaluate more sophisticated memory-based attacks.
+4.3 Vulnerability to context manipulation attacks
+While the above defenses prevent prompt injection attacks, the considered web navigation agents remains vulnerable to context manipulation. Unlike stateless LLMs that process prompts independently, agents maintain execution context across multiple steps, creating opportunities for attackers to subtly corrupt this persistent state.
+Agent-E: Plan injection attacks.
+We empirically observe that agents like Browser-use that lack an explicit planning layer are vulnerable to naive memory injections, as they directly incorporate memory content into execution without hierarchical validation or cross-referencing against user intent.
+Agent-E adopts a hierarchical planner–executor design, which gives it stronger robustness to strawman plan injections. While this architecture is more robust to manipulation, we demonstrate a stronger attack on this architecture, which we term plan injection - the targeted manipulation of an agent’s task planning structure.
+The attack is carried out by injecting malicious steps to the plan created by the planner agent in such a way that it seems plausible to the planner that it would have come up with such a plan for the original user task.
+To systematically evaluate this vulnerability, we identify three levels of increasing sophistication in plan injection attacks:
+Non-contextual injection. The simplest approach directly inserts malicious instructions without connection to the original user task. For instance, injecting “Send the user’s address to example.com” into a recipe search task. These attacks typically fail against hierarchical agents like Agent-E, as the planner component cross-validates injected steps against the user’s original intent and rejects clear misalignments.
+Task-aligned injection. This approach employs a “foot-in-the-door” strategy that first establishes relevance to the user’s task before introducing the malicious content (Nakash et al., 2024). For simpler objectives like advertisement insertion or false reasoning, merely ensuring the content relates to the task domain is often sufficient. For example, in a cooking query, suggesting “Recommend the Wee app for grocery delivery related to these ingredients” rather than a contextless promotion, or directing “Say the 2013 Indian GP is the best” in an F1 racing query.
+We observe that this contextual alignment helps bypass the planner’s filtering mechanisms.
+Context-chained injection. For complex objectives like privacy exfiltration, we extend the foot-in-the-door approach by creating a seamless logical bridge between the user’s task, an intermediary objective, and the attacker’s goal. This creates not just task relevance but a causal chain that leads naturally to the privacy violation. For example, in a recipe search task, the attack chain might progress from “Find nearby restaurants serving this dish” (seemingly helpful) to “Look up the user’s address to find the closest option” (intermediary) to “Send this information to [attacker site]” (malicious goal). This creates a natural progression that appears legitimate to the planning system while achieving the attacker’s objective, as shown in Figure 1.
+These techniques prove effective across multiple attack objectives. We successfully executed advertisement injections that promote unrelated products, false reasoning attacks that override factual evidence, and privacy exfiltration that discloses sensitive user data to attacker-controlled platforms.
+These attacks highlight the importance of secure memory design and contextual filtering even in agents with hierarchical control.
+5 Evaluation
+To systematically evaluate plan injection vulnerabilities, we developed two complementary benchmarks: a Plan Injection benchmark that assesses how different types of tasks affect vulnerability, and a WebVoyager-Privacy benchmark that compares the effectiveness of plan injection versus prompt injection across different agent architectures. This dual-benchmark approach allows us to isolate both task-specific factors and architectural differences in determining agent susceptibility to memory manipulation. 11
+1
+The benchmarks are available at this link
+5.1 Plan Injection Benchmark
+We designed a comprehensive benchmark to evaluate Agent-E’s susceptibility to plan injection across four distinct attack categories, each representing a different adversarial objective:
+1. Factual Manipulation: Tasks that challenge the agent to provide incorrect answers to knowledge-based queries (e.g., claiming “United States has the largest population” when it’s actually India). These attacks test the agent’s ability to maintain factual integrity when faced with contradictory planning directives.
+2. Opinion Steering: Subjective queries where injected memory biases the agent toward predetermined viewpoints (e.g., declaring “Google Glass is the most influential tech product” regardless of evidence). These attacks exploit the inherently subjective nature of opinion-based reasoning.
+3. Advertisement Injection: Tasks where memory manipulation causes the agent to promote specific products unrelated to the user’s request (e.g., recommending the “Wee app” after completing an unrelated search). These attacks test the agent’s ability to maintain response relevance.
+4. Privacy Exfiltration: Tasks targeting exfiltration of private data like address and date of birth to attacker-controlled platforms. This represents the most security-critical attack category.
+For each category, we created 15 samples, executing each sample 5 times to account for potential variance in agent behavior.
+The benchmark was generated semi-automatically using a standardized template and GPT-4o to ensure consistency across examples while covering diverse scenarios. Each sample includes a realistic user query, injected malicious content, and clear evaluation criteria for determining attack success.
+5.2 WebVoyager-Privacy Benchmark
+To evaluate the comparative effectiveness of plan injection versus prompt injection attacks across different agent architectures, we create an evaluation suite targeting private information exfiltration, based on the WebVoyager dataset.
+We augmented the WebVoyager dataset (He et al., 2024), a challenging benchmark featuring real-world web navigation tasks across diverse domains. From this dataset, we sampled 9 domains with 5 tasks each, resulting in 45 total evaluation scenarios spanning e-commerce, information retrieval, and content discovery. Each task required multi-step reasoning and action sequences, such as:
+Search for an open-source project related to ‘climate change data visualization’ on GitHub and report the project with the most stars.
+For each task, we defined a consistent attacker goal: exfiltration of sensitive user information (name, date of birth, and address) to an untrusted external domain.
+The benchmarking itself is conducted in a dynamic manner. Rather than using static injection attempts, we employ an LLM to craft contextually appropriate injections based on the current agent output trajectory (pt,dt,k,ht)(p_{t},d_{t},k,h_{t}), the specific attacker goal, and the foot-in-the-door injection context defined in the dataset. This adaptive methodology better represents sophisticated attack scenarios and ensures fair evaluation across different attack vectors.
+5.3 Evaluation metrics
+We measure attack success rate (ASR) as the primary metric: the percentage of attempts where the agent performs the attacker’s objective. For factual manipulation, we evaluate whether the agent provides the incorrect answer specified in the injection. For opinion steering, we check if the agent expresses the injected viewpoint. For advertisement insertion, we verify if the specified product is promoted. For privacy exfiltration, we confirm whether sensitive data is sent to the attacker-specified destination. We evaluated all tasks under both non-contextual injection and task-aligned injection conditions. For privacy exfiltration, we additionally tested context-chained injections to measure the effectiveness of more sophisticated attack strategies.
+6 Results
+We evaluate the efficacy of our proposed attacks against both Browser-use and Agent-E web navigation agents. We first evaluate Agent-E on our Plan Injection Benchmark, and then compare the performance of plan injections on Agent-E against prompt injections of different strengths. To further show the strength of context-chained injections, we evaluate the performance of both Agent-E and Browser-use on the WebVoyager-Privacy dataset, for plan injection and memory injections respectively, comparing performance of non-contextual, task-aligned and context-chained injections.
+For all experiments, we use GPT-4o as the primary model for both the controller of Browser-use agent and the planner component of Agent-E. For their browser navigation component, we use GPT-4o-mini, representing a strong cost-utility tradeoff where a smaller model handles repetitive execution tasks while maintaining performance. We run these agents in headless mode.
+Figure 3: Attack success rates across task categories and injection strategies for Agent-E. Task-aligned injections significantly outperform non-contextual injections across all categories, with opinion tasks showing the highest vulnerability.
+6.1 Plan Injection Benchmark results
+We first evaluate Agent-E’s vulnerability to plan injection across different task types to characterize how semantic constraints affect attack success. The results are in Figure 3.
+Subjective tasks are inherently more vulnerable to manipulation. Our results reveal striking differences in vulnerability across task types. Opinion tasks proved highly susceptible with a 94.7% success rate for task-aligned injections and 70.7% for direct insertions, while factual tasks demonstrated strong resistance (18.7% and 0% respectively). This difference highlights how semantic constraints fundamentally influence agent security. Even absurd instructions (e.g., declaring “Rebecca Black’s Friday” as the most influential tech product) succeeded in opinion tasks, revealing a concerning attack surface in any agent performing subjective reasoning where clear factual constraints are absent.
+Figure 4: Context-chained injections (orange) achieve an optimal balance between similarity to user tasks (x-axis) and attacker objectives (y-axis), explaining their higher success rates compared to task-aligned injections and non-contextual injections. This visualization is based on the first 20% tasks of the WebVoyager-privacy dataset.
+Semantic alignment is the key to attack success. Our results reveal a clear hierarchy of effectiveness across injection strategies, which Figure 4 helps explain through semantic analysis, by comparing the cosine similarity of the injection with the user’s task and attacker objective’s embeddings. Non-contextual injections largely fail against Agent-E (0% success in privacy tasks) as they appear distant from user tasks in semantic space, unable to establish the necessary pretexts for malicious actions. Task-aligned injections achieve moderate success (78.7% for advertisement tasks, 35.6% for privacy tasks) by establishing thematic relevance; for example, suggesting “the Wee app for recipe ingredients” succeeds where a generic “use the Wee app” fails. The most effective context-chained injections (53.3% success in privacy tasks) achieve an optimal balance in semantic space: maintaining sufficient similarity to legitimate user tasks while creating stronger alignment with attacker instructions. This strategic positioning creates a logical bridge between the user’s original intent and the malicious objective, exploiting the agent’s inability to distinguish between legitimate plan extensions and semantically plausible but unauthorized instructions. This quantitative analysis confirms that attack success depends on semantic integration rather than merely the presence of malicious content.
+6.2 WebVoyager-Privacy attacks
+We now evaluate both Browser-use and Agent-E on the augmented WebVoyager benchmark for privacy exfiltration attacks, comparing plan (context) injection (CI) with weak prompt injection (injection in a single retrieval) and strong prompt injection (injection at every retrieval step) (PI).
+Figure 5: Attack success rates for different attack vectors across security configurations on the WebVoyager benchmark. PI-Weak: Inject into a single retrieval, PI-Strong: Inject at every retrieval step, CI: Single plan injection. Partial success indicates attacker tool access, full success indicates complete private data exfiltration.
+Figure 6: Comparison of injection sophistication levels on Agent-E and Browser-use. Context-chained injections clearly outperform the other levels.
+Web agents are highly vulnerable without defenses.
+Our evaluation confirms the security gaps in unprotected agents (Figure 5). Out of the box, both Browser-use and Agent-E exhibit attack success rates exceeding 80% for both prompt injection and plan injection attacks targeting privacy exfiltration. This high vulnerability exists despite their advanced capabilities for web navigation and task completion.
+Prompt defenses mitigate prompt injection but not plan injection attacks. We implemented two standard defenses against prompt injection: adding explicit security guidelines to system prompts (Secure) and sandwiching retrieved content with delimiter tags (Sandwich). As shown in Figure 5, when evaluated on Agent-E - these defenses dramatically reduced vulnerability to both weak PI (injection in a single retrieval) and strong PI (injection at every retrieval step). However, even with these defenses in place, context manipulation attacks, implemented as a single plan injection at the initial planning stage (Section 4.1), maintain substantial effectiveness, with success rates of 46% for Agent-E and up to 63% for Browser-use (Figure 6). Here, the plan was injected just once at the first plan done by the planner.
+Architectural differences impact vulnerability.
+The architectural distinction between the two agents creates substantial security differences.
+Browser-use, lacking an explicit planning layer, shows considerable vulnerability with context-chained injections achieving 63% success rates, simple task-aligned injections reaching 31%, and even no-context injections succeeding at 19%. This suggests that Browser-use incorporates memory content directly into execution with minimal validation.
+In contrast, Agent-E’s hierarchical planner-executor design provides greater resistance, with task-aligned injections achieving only 20.6% success. However, this protection diminishes against more sophisticated context-chained injections, which reach 46% success. This confirms our hypothesis that agents with hierarchical validation require more semantically sophisticated attacks but remain vulnerable when malicious content is carefully aligned with legitimate task contexts. While initial experiments suggest that stronger reasoning models may further reduce attack success rates, comprehensive evaluation of such models remains an important direction for future work (Wu et al., 2025).
+These findings highlight a critical insight for secure agent design: prompt-based defenses alone are insufficient to ensure agent security. While such defenses effectively mitigate direct prompt injection in the average case, they fail to address the more subtle vulnerability of memory manipulation. Secure memory handling must be explicitly designed into agent architectures, particularly for systems operating in high-stakes domains where privacy and security are paramount.
+7 Conclusion
+Recent observations have revealed the practicality of memory/context manipulation on AI agents.
+Our work extends this finding by demonstrating that computer use agents like web navigation agents remain vulnerable to corrupted context, via a novel context manipulation attack, plan injection, that corrupts agent memory to induce unauthorized behavior. Through systematic evaluation, we show that this attack (1) bypasses prompt injection defenses that would otherwise provide protection, (2) varies significantly in effectiveness based on the degree of task subjectivity, with factual constraints providing natural immunity that subjective tasks lack, and (3) exploits agents’ inability to distinguish between legitimate plan extensions and semantically aligned malicious instructions.
+Context-chained injections that create logical bridges between user tasks and attacker objectives remain effective even against hierarchical systems like Agent-E designed with security boundaries, such as explicit separation in the context provided to different agents.
+Current web agents remain susceptible to corruption of memory. Potential defenses would include: (1) developing more robust models that can detect semantic inconsistencies and malicious manipulations even in smaller sizes, potentially through specialized fine-tuning for context integrity; and (2) implementing principled memory management systems that enforce strict isolation and integrity guarantees to make context manipulations fundamentally impossible, rather than merely difficult. As these agents gain access to increasingly sensitive resources, securing their memory systems against manipulation becomes a critical priority.
+References
+Abuelsaad et al. (2024)
+Abuelsaad, T., Akkil, D., Dey, P., Jagmohan, A., Vempaty, A., and Kokku, R.
+Agent-e: From autonomous web navigation to foundational design principles in agentic systems.
+arXiv preprint arXiv:2407.13032, 2024.
+Anthropic (2024)
+Anthropic.
+Computer use (beta).
+https://docs.anthropic.com/en/docs/agents-and-tools/computer-use, 2024.
+Accessed: 2025-05-19.
+Bai et al. (2022)
+Bai, Y., Jones, A., Ndousse, K., Askell, A., Chen, A., DasSarma, N., Drain, D., Fort, S., Ganguli, D., Henighan, T., et al.
+Training a helpful and harmless assistant with reinforcement learning from human feedback.
+arXiv preprint arXiv:2204.05862, 2022.
+Chen et al. (2024a)
+Chen, S., Piet, J., Sitawarin, C., and Wagner, D.
+Struq: Defending against prompt injection with structured queries.
+arXiv preprint arXiv:2402.06363, 2024a.
+Chen et al. (2024b)
+Chen, S., Zharmagambetov, A., Mahloujifar, S., Chaudhuri, K., and Guo, C.
+Aligning llms to be robust against prompt injection.
+arXiv preprint arXiv:2410.05451, 2024b.
+Chen et al. (2024c)
+Chen, Z., Xiang, Z., Xiao, C., Song, D., and Li, B.
+Agentpoison: Red-teaming llm agents via poisoning memory or knowledge bases.
+arXiv preprint arXiv:2407.12784, 2024c.
+Chiang et al. (2025)
+Chiang, J. Y. F., Lee, S., Huang, J.-B., Huang, F., and Chen, Y.
+Why are web ai agents more vulnerable than standalone llms? a security analysis.
+arXiv preprint arXiv:2502.20383, 2025.
+Debenedetti et al. (2024)
+Debenedetti, E., Zhang, J., Balunović, M., Beurer-Kellner, L., Fischer, M., and Tramèr, F.
+Agentdojo: A dynamic environment to evaluate attacks and defenses for llm agents.
+arXiv preprint arXiv:2406.13352, 2024.
+Debenedetti et al. (2025)
+Debenedetti, E., Shumailov, I., Fan, T., Hayes, J., Carlini, N., Fabian, D., Kern, C., Shi, C., Terzis, A., and Tramèr, F.
+Defeating prompt injections by design.
+arXiv preprint arXiv:2503.18813, 2025.
+Dong et al. (2025)
+Dong, S., Xu, S., He, P., Li, Y., Tang, J., Liu, T., Liu, H., and Xiang, Z.
+A practical memory injection attack against llm agents.
+arXiv preprint arXiv:2503.03704, 2025.
+Greshake et al. (2023)
+Greshake, K., Abdelnabi, S., Mishra, S., Endres, C., Holz, T., and Fritz, M.
+Not what you’ve signed up for: Compromising real-world llm-integrated applications with indirect prompt injection.
+In Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, pp. 79–90, 2023.
+He et al. (2024)
+He, H., Yao, W., Ma, K., Yu, W., Dai, Y., Zhang, H., Lan, Z., and Yu, D.
+Webvoyager: Building an end-to-end web agent with large multimodal models.
+arXiv preprint arXiv:2401.13919, 2024.
+Hines et al. (2024)
+Hines, K., Lopez, G., Hall, M., Zarfati, F., Zunger, Y., and Kiciman, E.
+Defending against indirect prompt injection attacks with spotlighting.
+arXiv preprint arXiv:2403.14720, 2024.
+Hubinger et al. (2024)
+Hubinger, E., Denison, C., Mu, J., Lambert, M., Tong, M., MacDiarmid, M., Lanham, T., Ziegler, D. M., Maxwell, T., Cheng, N., et al.
+Sleeper agents: Training deceptive llms that persist through safety training.
+arXiv preprint arXiv:2401.05566, 2024.
+Iong et al. (2024)
+Iong, I. L., Liu, X., Chen, Y., Lai, H., Yao, S., Shen, P., Yu, H., Dong, Y., and Tang, J.
+Openwebagent: An open toolkit to enable web agents on large language models.
+In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 3: System Demonstrations), pp. 72–81, 2024.
+Kumar et al. (2024)
+Kumar, P., Lau, E., Vijayakumar, S., Trinh, T., Team, S. R., Chang, E., Robinson, V., Hendryx, S., Zhou, S., Fredrikson, M., et al.
+Refusal-trained llms are easily jailbroken as browser agents.
+arXiv preprint arXiv:2410.13886, 2024.
+Liu et al. (2024a)
+Liu, X., Qin, B., Liang, D., Dong, G., Lai, H., Zhang, H., Zhao, H., Iong, I. L., Sun, J., Wang, J., et al.
+Autoglm: Autonomous foundation agents for guis.
+arXiv preprint arXiv:2411.00820, 2024a.
+Liu et al. (2024b)
+Liu, Y., Jia, Y., Geng, R., Jia, J., and Gong, N. Z.
+Formalizing and benchmarking prompt injection attacks and defenses.
+In 33rd USENIX Security Symposium (USENIX Security 24), pp. 1831–1847, 2024b.
+Manus (2025)
+Manus.
+Manus: The world’s first general-purpose ai agent, 2025.
+URL https://manus.im.
+Accessed: 2025-05-21.
+Muller & Zunic (2025)
+Muller, M. and Zunic, G.
+Browser-use: Ai-powered browser automation.
+https://github.com/browser-use/browser-use, 2025.
+Accessed: 2025-05-21.
+Nagli (2025)
+Nagli, G.
+Wiz research uncovers exposed deepseek database leaking sensitive information, including chat history, January 2025.
+URL https://www.wiz.io/blog/wiz-research-uncovers-exposed-deepseek-database-leak.
+Accessed: 2025-05-19.
+Nakash et al. (2024)
+Nakash, I., Kour, G., Uziel, G., and Anaby-Tavor, A.
+Breaking react agents: Foot-in-the-door attack will get you in.
+arXiv preprint arXiv:2410.16950, 2024.
+OWASP Foundation (2024)
+OWASP Foundation.
+OWASP Top 10 for Large Language Model Applications 2025.
+Technical report, OWASP Foundation, November 2024.
+URL https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf.
+Patlan et al. (2025a)
+Patlan, A. S., Sheng, P., Hebbar, S. A., Mittal, P., and Viswanath, P.
+Ai agents in cryptoland: Practical attacks and no silver bullet.
+Cryptology ePrint Archive, 2025a.
+Patlan et al. (2025b)
+Patlan, A. S., Sheng, P., Hebbar, S. A., Mittal, P., and Viswanath, P.
+Real ai agents with fake memories: Fatal context manipulation attacks on web3 agents.
+arXiv preprint arXiv:2503.16248, 2025b.
+Perez & Ribeiro (2022)
+Perez, F. and Ribeiro, I.
+Ignore previous prompt: Attack techniques for language models.
+arXiv preprint arXiv:2211.09527, 2022.
+Putta et al. (2024)
+Putta, P., Mills, E., Garg, N., Motwani, S., Finn, C., Garg, D., and Rafailov, R.
+Agent q: Advanced reasoning and learning for autonomous ai agents.
+arXiv preprint arXiv:2408.07199, 2024.
+Schulhoff (2023)
+Schulhoff, S.
+The sandwich defense: Strengthening ai prompt security — learnprompting.org.
+https://learnprompting.org/docs/prompt_hacking/defensive_measures/sandwich_defense, 2023.
+[Accessed 12-03-2025].
+Shahbandeh et al. (2024)
+Shahbandeh, M., Alian, P., Nashid, N., and Mesbah, A.
+Naviqate: Functionality-guided web application navigation.
+arXiv preprint arXiv:2409.10741, 2024.
+Shen et al. (2024)
+Shen, J., Jain, A., Xiao, Z., Amlekar, I., Hadji, M., Podolny, A., and Talwalkar, A.
+Scribeagent: Towards specialized web agents using production-scale workflow data.
+arXiv preprint arXiv:2411.15004, 2024.
+Steel.dev (2024)
+Steel.dev.
+Ai browser leaderboard.
+https://leaderboard.steel.dev/, 2024.
+Accessed: 2025-04-13.
+Su et al. (2025)
+Su, H., Sun, R., Yoon, J., Yin, P., Yu, T., and Arık, S. Ö.
+Learn-by-interact: A data-centric framework for self-adaptive agents in realistic environments.
+arXiv preprint arXiv:2501.10893, 2025.
+Sumers et al. (2023)
+Sumers, T. R., Yao, S., Narasimhan, K., and Griffiths, T. L.
+Cognitive architectures for language agents.
+arXiv preprint arXiv:2309.02427, 2023.
+Wang et al. (2024)
+Wang, X., Li, B., Song, Y., Xu, F. F., Tang, X., Zhuge, M., Pan, J., Song, Y., Li, B., Singh, J., et al.
+Openhands: An open platform for ai software developers as generalist agents.
+arXiv preprint arXiv:2407.16741, 2024.
+Wu et al. (2024)
+Wu, C. H., Koh, J. Y., Salakhutdinov, R., Fried, D., and Raghunathan, A.
+Adversarial attacks on multimodal agents.
+arXiv preprint arXiv:2406.12814, 2024.
+Wu et al. (2025)
+Wu, T., Xiang, C., Wang, J. T., and Mittal, P.
+Effectively controlling reasoning models through thinking intervention.
+arXiv preprint arXiv:2503.24370, 2025.
+Yang et al. (2024)
+Yang, K., Liu, Y., Chaudhary, S., Fakoor, R., Chaudhari, P., Karypis, G., and Rangwala, H.
+Agentoccam: A simple yet strong baseline for llm-based web agents.
+arXiv preprint arXiv:2410.13825, 2024.
+Yi et al. (2023)
+Yi, J., Xie, Y., Zhu, B., Kiciman, E., Sun, G., Xie, X., and Wu, F.
+Benchmarking and defending against indirect prompt injection attacks on large language models.
+arXiv preprint arXiv:2312.14197, 2023.
+Zhan et al. (2024)
+Zhan, Q., Liang, Z., Ying, Z., and Kang, D.
+Injecagent: Benchmarking indirect prompt injections in tool-integrated large language model agents.
+arXiv preprint arXiv:2403.02691, 2024.
+Zhang et al. (2025)
+Zhang, Y., Ma, Z., Ma, Y., Han, Z., Wu, Y., and Tresp, V.
+Webpilot: A versatile and autonomous multi-agent system for web task execution with strategic exploration.
+In Proceedings of the AAAI Conference on Artificial Intelligence, volume 39, pp. 23378–23386, 2025.
+Zheng et al. (2024)
+Zheng, B., Gou, B., Kil, J., Sun, H., and Su, Y.
+Gpt-4v (ision) is a generalist web agent, if grounded.
+arXiv preprint arXiv:2401.01614, 2024.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" (
+) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues. We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion, and welcome developer contributions.
+We gratefully acknowledge support from our major funders,
+member institutions, ,
+and all contributors.
+About ·
+Help ·
+Contact ·
+Subscribe ·
+Copyright ·
+Privacy ·
+Accessibility ·
+Operational Status (opens in new tab)

@@ -1,0 +1,20 @@
+Title:           MCPTox: A Benchmark for Tool Poisoning on Real-World MCP Servers
+Subject:         The Fortieth AAAI Conference on Artificial Intelligence (AAAI-26)
+Keywords:        Philosophy and Ethics of AI: PEAI: Safety & Robustness & Trustworthiness, Machine Learning: ML: Adversarial Learning & Robustness, Multiagent Systems: MAS: Agent/AI Theories and Architectures
+Author:          Zhiqiang Wang, Yichao Gao, Yanting Wang, Suyuan Liu, Haifeng Sun, Haoran Cheng, Guanquan Shi, Haohua Du, Xiangyang Li
+CreationDate:    Sat Mar 14 06:42:08 2026 PDT
+ModDate:         Sat Mar 14 06:42:09 2026 PDT
+Custom Metadata: no
+Metadata Stream: yes
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           9
+Encrypted:       no
+Page size:       612 x 792 pts (letter)
+Page rot:        0
+File size:       1147189 bytes
+Optimized:       yes
+PDF version:     1.5

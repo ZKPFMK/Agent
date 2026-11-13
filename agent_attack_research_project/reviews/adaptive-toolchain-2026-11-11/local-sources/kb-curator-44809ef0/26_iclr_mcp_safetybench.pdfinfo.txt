@@ -1,0 +1,18 @@
+Title:           MCP-SafetyBench: A Benchmark for Safety Evaluation of Large Language Models with Real-World MCP Servers
+Author:          Xuanjun Zong; Zhiqi Shen; Lei Wang; Yunshi Lan; Chao Yang
+Creator:         arXiv GenPDF (tex2pdf:7b1e169)
+Producer:        pikepdf 8.15.1
+Custom Metadata: yes
+Metadata Stream: yes
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           25
+Encrypted:       no
+Page size:       612 x 792 pts (letter)
+Page rot:        0
+File size:       6874511 bytes
+Optimized:       no
+PDF version:     1.7

@@ -26,7 +26,7 @@ MCP 攻击研究可以概括为：
 | **2508** | 工具描述投毒 | **MCPTox** | 工具元数据和描述 | 能否让 Agent 把隐藏指令当成工具使用规则？ |
 | **2509** | 工具链组合攻击 | **Parasites in the Toolchain** | 外部内容和跨工具调用序列 | 多个单独合法的工具能否组成完整攻击链？ |
 | **2512** | 综合安全基准 | **MCP-SafetyBench（MSB）** | Server、Host、User 多侧攻击面 | 能否在真实 MCP Server、多轮任务和跨服务器场景中系统评估多类攻击？ |
-| **2026** | 情境感知的零点击隐私外泄 | **SOPE** | 工具描述、调用提示词和代码实现 | 能否在保持工具功能和统计特征的同时，自动提取并外泄情境相关的隐私？ |
+| **2605** | 情境感知的零点击隐私外泄 | **SOPE** | 工具描述、调用提示词和代码实现 | 能否在保持工具功能和统计特征的同时，自动提取并外泄情境相关的隐私？ |
 
 ## 五篇论文的递进关系
 
@@ -52,30 +52,112 @@ MCP-SafetyBench：将多类 MCP 攻击纳入统一、真实环境的安全评测
 - **SOPE：服务器转换与隐私外泄攻击。**攻击者修改工具描述、调用提示词和代码实现，通过 Assign—Fuse—Leak 将良性 MCP Server 转为保持原功能、情境感知且无需用户点击的隐私窃取变体。
 - **MCP-SafetyBench：评测层工作。**它引用 MPMA 和 MCPTox，将工具投毒、参数投毒、跨服务器污染等多类攻击放入真实 MCP Server 和多轮任务中进行综合评估。
 
-## 引用关系
+## 目录内 MCP 相关文章的引用关系
 
-箭头表示“左侧论文被右侧论文直接引用”。
+图中节点按与 MCP 相关的独立论文合并，根目录和会议子目录中的重复 PDF 只保留一个节点。节点后的 `YYMM` 表示年份和月份，例如 `2605` 表示 2026 年 5 月；仅有会议或期刊年份时保留四位年份。箭头表示“左侧论文被右侧论文直接引用”；只绘制能够从目录内论文的参考文献或正文明确确认的关系。
 
-```text
-MPMA（2505） ─────────┐
-                     ├──> Parasites（2509）
-MCPTox（2508） ───────┘
+```mermaid
+flowchart LR
+    subgraph core["MCP 核心安全研究"]
+        MCPXKIT["MCPXKIT（2508）"]
+        WHEN["When MCP Servers Attack（2509）"]
+        BEYOND["Beyond the Protocol（2506）"]
+        FIRST["MCP at First Glance（2506）"]
+        REDTEAM["Red-Teaming Coding Agents（2509）"]
+        MCPTox["MCPTox（2508）"]
+        MPMA["MPMA（2505）"]
+        MCSB["MCP-SafetyBench（2512）"]
+        MSB["MCP Security Bench（MSB，2510）"]
+        PARA["Parasites in the Toolchain（2509）"]
+        SOPE["SOPE（2605）"]
+        COPEX["COPEX（2610）"]
+    end
 
-MPMA（2505） ─────────┐
-                     ├──> MCP-SafetyBench（2512）
-MCPTox（2508） ───────┘
+    subgraph analysis["MCP 防御与分析"]
+        THIRD["Third-Party Safety Risks（2506）"]
+        TOOL["Securing the Tool Layer（2026）"]
+        MCPGUARD["MCP-Guard（2507）"]
+        SAFE["SafeMCP（2026）"]
+        MCIP["MCIP（2505）"]
+        THREAT["MCP Threat Modeling（2026）"]
+        SOC["MCP Security Framework（SOC，2026）"]
+        REMOTE["Remote MCP Server Attack Surfaces（2026）"]
+    end
 
-MCPTox（2508） ─────────────┐
-Parasites（2509） ──────────┼──> SOPE（2026）
-MCP-SafetyBench（2512） ────┘
+    subgraph agents["MCP 相关 Agent 攻击研究"]
+        AMA["Attractive Metadata Attack（2508）"]
+        INVISIBLE["Invisible Prompts（2025）"]
+        POTEMKIN["Potemkin（2026）"]
+        A2M["A2M（2026）"]
+    end
+
+    MPMA --> MCPXKIT
+    MPMA --> WHEN
+    MPMA --> MSB
+    MPMA --> MCSB
+    MPMA --> PARA
+    MPMA --> A2M
+    MPMA --> REMOTE
+    MPMA --> THREAT
+    MPMA --> MCPGUARD
+
+    MCPTox --> REDTEAM
+    MCPTox --> MSB
+    MCPTox --> MCSB
+    MCPTox --> PARA
+    MCPTox --> SOPE
+    MCPTox --> COPEX
+    MCPTox --> THREAT
+    MCPTox --> REMOTE
+    MCPTox --> TOOL
+
+    MCPXKIT --> WHEN
+    MCPXKIT --> PARA
+    MCPXKIT --> COPEX
+    MCPXKIT --> SOC
+    MCPXKIT --> MCPGUARD
+
+    THIRD --> WHEN
+    THIRD --> SAFE
+    THIRD --> MCPGUARD
+    MCIP --> WHEN
+    MCIP --> MSB
+    MCIP --> MCSB
+    MCIP --> MCPGUARD
+
+    BEYOND --> WHEN
+    BEYOND --> MSB
+    BEYOND --> PARA
+    BEYOND --> SOPE
+    BEYOND --> A2M
+    BEYOND --> THREAT
+    BEYOND --> REMOTE
+    BEYOND --> TOOL
+
+    WHEN --> PARA
+    WHEN --> REMOTE
+    WHEN --> TOOL
+
+    FIRST --> MSB
+    FIRST --> PARA
+    FIRST --> COPEX
+
+    SAFE --> MCSB
+    MCSB --> SOPE
+    MCSB --> COPEX
+    MCSB --> THREAT
+    MSB --> THREAT
+    PARA --> SOPE
+    PARA --> A2M
+    MCPGUARD --> THREAT
+
+    AMA --> POTEMKIN
+    AMA --> A2M
 ```
 
-- Parasites 直接引用 MPMA 和 MCPTox。
-- MCP-SafetyBench 直接引用 MPMA 和 MCPTox。
-- SOPE 直接引用 MCPTox、Parasites 和 MCP-SafetyBench；此外还直接引用 MCPSecBench，但 MCPSecBench 不在当前五篇代表性论文的路线图中。
-- MPMA 与 MCPTox 之间没有发现直接互引关系。
-- MCP-SafetyBench 与 Parasites 之间没有发现直接互引关系。
-- SOPE 与 MPMA 之间没有发现直接互引关系。
+目录外的 **MCPSecBench**、**MCP Guardian** 和 **MCP-AttackBench** 等文献在部分论文中被引用，但它们没有作为本图节点纳入。图中没有连边的文章表示在当前目录材料中尚未确认其与其他目录内文章存在直接引用关系。
+
+交互式版本：[MCP引用关系图.html](./MCP引用关系图.html)
 
 这些工作分别覆盖选择、解释、编排、服务器转换与隐私外泄，以及综合评测层次：
 

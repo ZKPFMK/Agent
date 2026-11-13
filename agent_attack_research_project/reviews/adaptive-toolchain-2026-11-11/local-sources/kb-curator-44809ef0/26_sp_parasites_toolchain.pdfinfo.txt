@@ -1,0 +1,18 @@
+Title:           Parasites in the Toolchain: A Large-Scale Analysis of Attacks on the MCP Ecosystem
+Author:          Shuli Zhao; Qinsheng Hou; Zihan Zhan; Yanhao Wang; Yuchong Xie; Yu Guo; Libo Chen; Shenghong Li; Zhi Xue
+Creator:         arXiv GenPDF (tex2pdf:a6404ea)
+Producer:        pikepdf 8.15.1
+Custom Metadata: yes
+Metadata Stream: yes
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           18
+Encrypted:       no
+Page size:       612 x 792 pts (letter)
+Page rot:        0
+File size:       1099753 bytes
+Optimized:       no
+PDF version:     1.7

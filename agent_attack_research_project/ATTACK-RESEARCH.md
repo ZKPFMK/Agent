@@ -3,17 +3,21 @@
 This project uses `agent-attack-v1`. The external corpus is read-only; all project conclusions must point to a
 source row, raw trial log or explicit inference label.
 
-## Active direction — P4 typed/provenance conversion
+## Current scope — MCP attack screening, 2026-11-10
 
-P4 tested whether an unsafe typed conversion at a two-agent handoff can upgrade one untrusted value into a trusted
-authorization state. Its results are preserved as bounded protocol-level artifacts, but public pre-emption closed P4 as
-an ACL paper candidate. Q1 then reproduced a known MCP parser mismatch across multiple local implementations; D-16
-closed it as a paper candidate and preserved the outputs as regression evidence.
+The user requested a subagent-assisted search for an effective MCP attack research direction. The bounded question is whether one attacker-controlled MCP input or protocol interaction produces an independently observable unauthorized action in an owned sandbox, beyond a matched naive baseline, without sacrificing legitimate task completion. No mechanism or high success rate is assumed.
 
-I1, P4 and Q1 remain recorded negative-boundary/protocol results. The active project has returned to R4 for a new
-mechanism-level thesis.
+Primary surface: A external interaction through MCP. B internal state or C composition is secondary only when an intermediate causal state is independently observed. Read-only source corpus and paper locations remain those recorded below. Candidate novelty and real implementation reachability must pass before a fresh synthetic pilot; no new model experiment is currently authorized by a passed gate.
 
-## Profile
+Current synthesis: [R4-MCP-SYNTHESIS-2026-11-10.md](./R4-MCP-SYNTHESIS-2026-11-10.md) plus dated screens through [R4-MCP-CODE-EXECUTION-BOUNDARY-SCREEN-2026-11-13.md](./R4-MCP-CODE-EXECUTION-BOUNDARY-SCREEN-2026-11-13.md). D-43 closes MCP external-content code-execution boundary for the checked local range and V1/V2/V3 as NO-GO; INFUSE/CIBER and MCP-specific CE-MCP arXiv:2602.15945 cover the broad mechanism, while local code lacks a fixed runner/oracle/G-T-X-E chain. The next bounded question is MCP prompt lifecycle/handler binding. The project remains in R4 without a selected thesis or experiment. Reopening any closed axis requires a pinned implementation, independent protected-effect witness and fresh mechanism distinct from its recorded nearest work; no general source expansion or model trial is implied.
+
+I1, P4 and Q1/C4 remain closed as paper directions. Their logs and original protocols are retained. The I1 question, variable ledger and probe arms below are historical; they must not be resumed as the current MCP experiment. Current execution remains limited to project-owned synthetic canaries, no external effects, no real secrets, no production targets and no publication.
+
+## User-directed focused review — 2026-11-11
+
+The user requested auto-research of `papers/10_MCP攻击/自适应工具链与Agent行为扩展_研究构想.md`. This bounded R0/R1/R4 literature and design review is complete, with separate local-paper, public-literature and threat/design reports under `reviews/adaptive-toolchain-2026-11-11/`. `REPORT.md` is the coordinator synthesis; D-20 rejects the broad new-autonomous-attack framing and retains only an UNCERTAIN evaluation question under restricted attacker knowledge and neutral real failure. Four local papers and eleven public papers were checked at relevant full-text-section level, not comprehensively reproduced. The review does not select a thesis, reopen I1/P4/Q1, register an effectiveness claim, authorize a new evaluation spend or change the safety boundary. Its question is whether one fixed external-content input under restricted attacker tool knowledge has a remaining, measurable delta in victim replanning and unauthorized effects beyond strong matched baselines.
+
+## Historical profile — I1 (closed; not the current execution plan)
 
 - **profile:** `agent-attack-v1`
 - **research question:** Under a query-only attacker that controls the order of synthetic, individually true evidence fragments, does automatic memory plus downstream summary aggregation create a persistent false causal belief that is absent or weaker under random order, no memory or no aggregation?
