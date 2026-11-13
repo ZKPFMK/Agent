@@ -18,6 +18,41 @@
 | `2611_arxiv_overserve.pdf` | OverServe: Resource Amplification Attacks on SaaS Agents via Tool–Prompt Co-Design | [arXiv:2611.14808](https://arxiv.org/abs/2611.14808) | MCP 工具驱动的资源放大和经济型 DoS |
 | `2026_emnlp_beyond_max_tokens.pdf` | Beyond Max Tokens: Stealthy Resource Amplification via Tool Calling Chains in LLM Agents | [ACL Anthology](https://aclanthology.org/2026.emnlp-main.2090/) | 隐蔽的长工具调用链和成本放大 |
 
+## 本地目录中补入的核心论文
+
+以下文件原本已经存在于上级 `10_MCP攻击` 目录及其子目录，本次复制到这里，便于集中阅读。它们不是重复下载的外部副本。
+
+### 四篇核心攻击工作
+
+| 本地文件 | 工作 | 来源 | 主要方向 |
+|---|---|---|---|
+| `2026_mpma.pdf` | MPMA: Preference Manipulation Attack Against Model Context Protocol | [AAAI 2026 / 本地 PDF](../AAAI近三年_MCP攻击/26_aaai_mpma.pdf) | 工具选择偏好操纵 |
+| `2026_mcptox.pdf` | MCPTox: A Benchmark for Tool Poisoning Attack on Real-World MCP Servers | [arXiv:2508.14925](https://arxiv.org/abs/2508.14925) | 工具描述/元数据投毒 |
+| `2026_parasites_toolchain.pdf` | Parasites in the Toolchain: A Large-Scale Analysis of Attacks on the MCP Ecosystem | [本地 PDF](../26_sp_parasites_toolchain.pdf) | 跨工具链组合与隐私外泄 |
+| `2026_sope.pdf` | SOPE: Situation-Aware and Statistically Indistinguishable Privacy Exfiltration for MCP-enabled Agents | [PMLR](https://proceedings.mlr.press/v306/lin26r.html) | 情境感知、零点击隐私外泄 |
+
+### 其它本地攻击、评测和安全分析工作
+
+| 本地文件 | 工作 | 主要方向 |
+|---|---|---|
+| `2025_beyond_protocol.pdf` | Beyond the Protocol: Unveiling Attack Vectors in the MCP Ecosystem | 工具投毒、Puppet、Rug Pull、恶意外部资源 |
+| `2025_when_mcp_servers_attack.pdf` | When MCP Servers Attack: Taxonomy, Feasibility, and Mitigation | 恶意 MCP Server 攻击分类与 PoC |
+| `2025_mcpxkit.pdf` | MCPXKIT: The Unified Toolkit for Analyzing Model Context Protocol Security | 31 类 MCP 攻击工具包 |
+| `2025_attractive_metadata_attack.pdf` | Attractive Metadata Attack: Inducing LLM Agents to Invoke Malicious Tools | 吸引性元数据与工具选择操纵 |
+| `2025_invisible_prompts.pdf` | Invisible Prompts, Visible Threats: Malicious Font Injection in External Resources for Large Language Models | 外部资源隐藏注入 |
+| `2025_tool_invocation_red_team.pdf` | Red-Teaming Coding Agents from a Tool-Invocation Perspective | ToolLeak 与工具调用劫持 |
+| `2026_a2m.pdf` | A2M: Trace-Optimized Agent Hijacking in the MCP Ecosystem | 元数据吸引与返回轨迹操纵 |
+| `2026_remote_mcp_server_attack_surfaces.pdf` | Beyond Tool Poisoning: Attack Surfaces of Malicious Remote MCP Servers Across LLM Platforms | 远程恶意 Server 攻击面 |
+| `2026_log_to_leak.pdf` | Log-To-Leak: Prompt Injection Attacks on Tool-Using LLM Agents via MCP | 追加日志调用和数据外泄 |
+| `2026_signed_sealed_leaked.pdf` | Signed, Sealed, Leaked: Trust Beyond Signature for MCP Toolchains | 签名工具供应链与隐蔽外泄 |
+| `2026_destructive_tool_approval.pdf` | When Neither Side Confirms: Destructive Tool Approval Across MCP Servers and Hosts | 破坏性工具调用授权错配 |
+| `2026_filesystem_capability_laundering.pdf` | My Credentials, Please: Detecting Filesystem Capability Laundering in MCP Servers at Scale | 文件系统能力滥用与凭据泄露 |
+| `2026_cross_framework_tool_poisoning.pdf` | MCP Tool Poisoning in Agentic AI Frameworks: A Cross-Framework Measurement Study | 跨框架工具投毒测量 |
+| `2026_gatewaybench.pdf` | GatewayBench: Unified Capability and Security Evaluation Platform for MCP Gateways | 网关、工具面和间接攻击评测 |
+| `2026_mcp_safetybench.pdf` | MCP-SafetyBench: A Benchmark for Safety Evaluation of Large Language Models with Real-World MCP Servers | 真实 Server、多轮、多侧攻击基准 |
+| `2026_msb.pdf` | MCP Security Bench (MSB): Benchmarking Attacks Against Model Context Protocol in LLM Agents | 12 类 MCP 攻击综合基准 |
+| `2026_copex.pdf` | COPEX: Benchmarking LLM Robustness to Adversarial Context Across MCP Layers | 分层和观测边界评测 |
+
 ## 尚未下载的优先工作
 
 以下两篇已确认是优先相关工作，但当前公开下载请求被 ACM 的 Cloudflare challenge 返回 HTTP 403，因此没有把错误页面保存为 PDF：
